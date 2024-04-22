@@ -33,7 +33,10 @@ def register_user(request):
         username = request.POST.get('username')
         email = request.POST.get('email')
         password = request.POST.get('password')
-
+        student_id = request.POST.get('student_id')
+        phone_number = request.POST.get('phone_number')
+        fullname = request.POST.get('fullname')
+      
         try:
             if not (email.endswith("@g.bracu.ac.bd") or email.endswith("@bracu.ac.bd")):
                 messages.success(request, 'Must be a BRACU G-suite email address!')
@@ -50,7 +53,11 @@ def register_user(request):
             user_obj.set_password(password)
             user_obj.save()
             auth_token = str(uuid.uuid4())
-            profile_obj = Profile.objects.create(user = user_obj, auth_token = auth_token)
+            profile_obj = Profile.objects.create(user = user_obj,
+                                                 auth_token = auth_token,
+                                                 fullname=fullname,
+                                                 student_id=student_id,
+                                                 phone_number=phone_number)
             profile_obj.save()
             send_mail_after_registration(email, auth_token)
             return redirect('/token')
@@ -92,3 +99,37 @@ def send_mail_after_registration(email, token):
     email_from = settings.EMAIL_HOST_USER
     recipient_list = [email]
     send_mail(subject, message, email_from, recipient_list)
+
+
+from .models import Vehicle
+
+def vehicle_registration(request):
+    if request.method == 'POST':
+        current_user_profile = request.user.profile
+        
+        vehicle_type = request.POST.get('vehicle_type')
+        vehicle_model = request.POST.get('vehicle_model')
+        vehicle_reg = request.POST.get('vehicle_reg')
+        vehicle_capacity = request.POST.get('vehicle_capacity')
+        vehicle_color = request.POST.get('vehicle_color')
+        
+        try:
+            new_vehicle = Vehicle.objects.create(
+                host=current_user_profile,
+                vehicle_type=vehicle_type,
+                vehicle_model=vehicle_model,
+                vehicle_reg=vehicle_reg,
+                vehicle_capacity=vehicle_capacity,
+                vehicle_color=vehicle_color
+            )
+            new_vehicle.save()
+
+            messages.success(request, "Vehicle registered successfully!")
+
+            return redirect('/')
+        except Exception as e:
+            messages.error(request, f"An error occurred: {str(e)}")
+
+            return redirect('/vehicle_registration')
+        
+    return render(request, 'vehicle_registration.html')
