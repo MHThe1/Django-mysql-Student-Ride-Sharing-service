@@ -1,0 +1,29 @@
+{% extends 'header.html' %}
+
+{% block content %}
+
+<div class="col-md-6 offset-md-3">
+
+{% if user.is_authenticated %}
+
+<h1>Welcome to STuber, A ride sharing service for BRACU Students</h1>
+
+{% else %}
+<h1>Register</h1>
+<form method="POST">
+    {% csrf_token %}
+        <div class="mb-3">
+          <input type="text" class="form-control" name="username" placeholder="Username" required>
+        </div>
+        <div class="mb-3">
+            <input type="email" class="form-control" name="email" placeholder="Email" required>
+          </div>
+  
+        <div class="mb-3">
+          <input type="password" class="form-control" name="password" placeholder="Password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Register</button>
+</form>
+{% endif %}
+</div>
+{%endblock%}
