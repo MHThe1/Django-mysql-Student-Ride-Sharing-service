@@ -7,6 +7,8 @@ import uuid
 from django.conf import settings
 from django.core.mail import send_mail
 from .forms import *
+from django.http import JsonResponse
+
 
 def home(request):
     if request.method == 'POST':
@@ -160,3 +162,15 @@ def dl_registration(request):
         form = DLForm()
         
     return render(request, 'driver_registration.html', {'form': form})
+
+
+
+def cost_estimate(request):
+    if 'term' in request.GET:
+        qs = Location.objects.filter(location_name__istartswith=request.GET.get('term'))
+        lnames = list()
+        for loca in qs:
+            lnames.append(loca.location_name)
+        return JsonResponse(lnames, safe=False)
+
+    return render(request, 'cost_estimate.html')

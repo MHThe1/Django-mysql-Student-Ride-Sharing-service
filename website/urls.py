@@ -12,4 +12,5 @@ urlpatterns = [
     path('error/', views.error_page, name='error'),
     path('vehicle_registration/', views.vehicle_registration, name='vehicle_registration'),
     path('dl_registration/', views.dl_registration, name='dl_registration'),
+    path('cost_estimate/', views.cost_estimate, name='cost_estimate'),
 ]

@@ -40,6 +40,7 @@
     const vehicleType = document.getElementById('vehicleType');
     const selfDriveCheckbox = document.getElementById('selfDrive');
     const driverNameInput = document.getElementById('driverName');
+    selfDriveCheckbox.disabled = false;
 
     vehicleType.addEventListener('change', function () {
         if (vehicleType.value === 'bike' || vehicleType.value === 'both') {

@@ -43,3 +43,14 @@ class Driver(models.Model):
 
     def __str__(self):
         return self.host.user.username
+
+
+class Location(models.Model):
+    location_name = models.CharField(max_length=40)
+    loc_address = models.CharField(max_length=300)
+    latitude = models.CharField(max_length=100)
+    longitude = models.CharField(max_length=100)
+    distance = models.DecimalField(null=True, max_digits=4, decimal_places=2)
+
+    def __str__(self):
+        return self.location_name
