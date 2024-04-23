@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-# Create your models here.
 
 
 class Profile(models.Model):
@@ -13,6 +12,7 @@ class Profile(models.Model):
     student_id = models.CharField(max_length=8, default='None')
     phone_number = models.CharField(max_length=11, default='None')
     rating = models.FloatField(default=5)
+    profile_pic = models.ImageField(null=True, blank=True, upload_to='profile_pics', default='default.png')
 
     def __str__(self):
         return self.user.username
@@ -25,6 +25,8 @@ class Vehicle(models.Model):
     vehicle_reg = models.CharField(max_length=20, unique=True)
     vehicle_capacity = models.CharField(max_length=2)
     vehicle_color = models.CharField(max_length=20)
+    registration_paper = models.ImageField(upload_to='registration_pics', null=True, blank=True)
+    v_is_verified = models.BooleanField(default=False)
 
     def __str__(self):
         return self.vehicle_model

@@ -6,7 +6,7 @@ from .models import *
 import uuid
 from django.conf import settings
 from django.core.mail import send_mail
-
+from .forms import *
 
 def home(request):
     if request.method == 'POST':
@@ -100,36 +100,31 @@ def send_mail_after_registration(email, token):
     recipient_list = [email]
     send_mail(subject, message, email_from, recipient_list)
 
-
-from .models import Vehicle
+def send_mail_to_approve_vehicle(subject):
+    subject = subject
+    message = f'An user has registered a vehicle with this registration paper, please take a look and verify from admin panel. Link to admin panel: http://127.0.0.1:8000/admin'
+    email_from = settings.EMAIL_HOST_USER
+    recipient_list = ['mehedihtanvir@gmail.com']
+    send_mail(subject, message, email_from, recipient_list)
 
 def vehicle_registration(request):
     if request.method == 'POST':
         current_user_profile = request.user.profile
+        form = VehicleForm(request.POST, request.FILES)
         
-        vehicle_type = request.POST.get('vehicle_type')
-        vehicle_model = request.POST.get('vehicle_model')
-        vehicle_reg = request.POST.get('vehicle_reg')
-        vehicle_capacity = request.POST.get('vehicle_capacity')
-        vehicle_color = request.POST.get('vehicle_color')
-        
-        try:
-            new_vehicle = Vehicle.objects.create(
-                host=current_user_profile,
-                vehicle_type=vehicle_type,
-                vehicle_model=vehicle_model,
-                vehicle_reg=vehicle_reg,
-                vehicle_capacity=vehicle_capacity,
-                vehicle_color=vehicle_color
-            )
+        if form.is_valid():
+            new_vehicle = form.save(commit=False)
+            new_vehicle.host = current_user_profile
             new_vehicle.save()
 
-            messages.success(request, "Vehicle registered successfully!")
-
+            subject = "A new vehicle awaiting approval"
+            send_mail_to_approve_vehicle(subject)
+            messages.success(request, "Vehicle registered successfully! Wait for Approval")
             return redirect('/')
-        except Exception as e:
-            messages.error(request, f"An error occurred: {str(e)}")
+        else:
+            messages.error(request, "Form validation failed!")
 
-            return redirect('/vehicle_registration')
+    else:
+        form = VehicleForm()
         
-    return render(request, 'vehicle_registration.html')
+    return render(request, 'vehicle_registration.html', {'form': form})

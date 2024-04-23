@@ -6,7 +6,7 @@
 
   {% if user.is_authenticated %}
   <h1>Register Vehicle</h1>
-  <form method="POST">
+  <form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     <div class="mb-3">
       <input type="text" class="form-control" name="vehicle_type" placeholder="Vehicle Type" required>
@@ -19,6 +19,10 @@
     </div>
     <div class="mb-3">
       <input type="text" class="form-control" name="vehicle_reg" placeholder="Vehicle Registration" required>
+    </div>
+    <div class="mb-3">
+      <label for="formFile" class="form-label">Registration Paper</label>
+      <input class="form-control" type="file" name="registration_paper">
     </div>
     <div class="mb-3">
       <input type="text" class="form-control" name="vehicle_color" placeholder="Vehicle Color" required>
