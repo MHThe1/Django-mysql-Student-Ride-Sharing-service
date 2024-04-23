@@ -30,3 +30,16 @@ class Vehicle(models.Model):
 
     def __str__(self):
         return self.vehicle_model
+    
+
+class Driver(models.Model):
+    host = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    dl_type = models.CharField(max_length=4, default='Car')
+    is_that_host = models.BooleanField(default=True)
+    driver_name = models.CharField(max_length=100, null=True, blank=True,)
+    dl_reg = models.CharField(max_length=20, unique=True)
+    dl_paper = models.ImageField(upload_to='dl_pics', null=True, blank=True)
+    dl_approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.host.user.username

@@ -1,0 +1,64 @@
+{% extends 'header.html' %}
+
+{% block content %}
+
+<div class="col-md-6 offset-md-3">
+
+    {% if user.is_authenticated %}
+    <h1>Driver Registration</h1>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="vehicleType">Driving Licencse Type:</label>
+            <select id="vehicleType" name="dl_type">
+                <option value="car">Car</option>
+                <option value="bike">Bike</option>
+                <option value="both">Both</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="selfDrive">Self Drive?</label>
+            <input type="checkbox" id="selfDrive" name="is_that_host">
+        </div>
+        <div class="mb-3">
+            <input type="text" placeholder="Driver Name" name="driver_name" id="driverName">
+        </div>
+        <div class="mb-3">
+            <input type="text" class="form-control" name="dl_reg" placeholder="DL Licencse Number" required>
+        </div>
+        <div class="mb-3">
+            <label for="formFile" class="form-label">DL Paper</label>
+            <input class="form-control" type="file" name="dl_paper">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+    {% else %}
+    <h1>Please Register or Login First</h1>
+    {% endif %}
+</div>
+<script>
+    const vehicleType = document.getElementById('vehicleType');
+    const selfDriveCheckbox = document.getElementById('selfDrive');
+    const driverNameInput = document.getElementById('driverName');
+
+    vehicleType.addEventListener('change', function () {
+        if (vehicleType.value === 'bike' || vehicleType.value === 'both') {
+            selfDriveCheckbox.checked = true;
+            selfDriveCheckbox.disabled = true;
+            driverNameInput.disabled = true;
+        } else {
+            selfDriveCheckbox.checked = false;
+            selfDriveCheckbox.disabled = false;
+            driverNameInput.disabled = false;
+        }
+    });
+
+    selfDriveCheckbox.addEventListener('change', function () {
+        if (selfDriveCheckbox.checked) {
+            driverNameInput.disabled = true;
+        } else {
+            driverNameInput.disabled = false;
+        }
+    });
+</script>
+{% endblock %}

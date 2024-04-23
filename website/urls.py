@@ -11,4 +11,5 @@ urlpatterns = [
     path('verify/<auth_token>', views.verify, name='verify'),
     path('error/', views.error_page, name='error'),
     path('vehicle_registration/', views.vehicle_registration, name='vehicle_registration'),
+    path('dl_registration/', views.dl_registration, name='dl_registration'),
 ]

@@ -128,3 +128,35 @@ def vehicle_registration(request):
         form = VehicleForm()
         
     return render(request, 'vehicle_registration.html', {'form': form})
+
+
+
+def send_mail_to_approve_dl(subject):
+    subject = subject
+    message = f'An user has registered a DL with DL paper, please take a look and verify from admin panel. Link to admin panel: http://127.0.0.1:8000/admin'
+    email_from = settings.EMAIL_HOST_USER
+    recipient_list = ['mehedihtanvir@gmail.com']
+    send_mail(subject, message, email_from, recipient_list)
+
+
+def dl_registration(request):
+    if request.method == 'POST':
+        current_user_profile = request.user.profile
+        form = DLForm(request.POST, request.FILES)
+        
+        if form.is_valid():
+            new_dl = form.save(commit=False)
+            new_dl.host = current_user_profile
+            new_dl.save()
+
+            subject = "A new DL needs approval"
+            send_mail_to_approve_dl(subject)
+            messages.success(request, "DL registered successfully! Wait for Approval")
+            return redirect('/')
+        else:
+            messages.error(request, "Form validation failed!")
+
+    else:
+        form = DLForm()
+        
+    return render(request, 'driver_registration.html', {'form': form})
