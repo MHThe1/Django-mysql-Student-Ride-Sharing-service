@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Ride Monitoring</title>
+    <title>Ride Details</title>
     <!-- Include Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
@@ -28,10 +28,6 @@
             font-size: 16px;
             margin-bottom: 10px;
         }
-        h2 {
-            font-size: 20px;
-            margin-top: 20px;
-        }
         .btn {
             font-size: 14px;
             padding: 8px 16px;
@@ -41,29 +37,37 @@
             background-color: #007bff;
             border: none;
         }
-        .btn-primary:hover {
+        .btn-success {
+            background-color: #28a745;
+            border: none;
+        }
+        .btn-warning {
+            background-color: #ffc107;
+            border: none;
+        }
+        .btn-primary:hover,
+        .btn-success:hover,
+        .btn-warning:hover {
             opacity: 0.8;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Ride Details</h1>
-        <p>Start Location: {{ ride.start_loc }}</p>
-        <p>Destination: {{ ride.destination }}</p>
-        <p>Ride Status: {{ ride.ride_status }}</p>
-        
-        {% if ride.ride_status == 'ended' %}
-            <h2>Review the Host</h2>
-            <form method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-primary">Submit Review</button>
-            </form>
-        {% endif %}
+        <h1>Review Rider</h1>
+        <form method="post">
+            {% csrf_token %}
+            <select  name="rider_review" id="id_rider_review">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+            <input type="submit" value="Submit">
+        </form>
     </div>
 
-    <!-- Include Bootstrap JS (optional) -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

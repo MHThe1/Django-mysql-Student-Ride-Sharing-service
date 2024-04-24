@@ -2,45 +2,95 @@
 <html>
 <head>
     <title>Ride Details</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Custom styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #007bff;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .btn {
+            font-size: 14px;
+            padding: 8px 16px;
+            margin-right: 10px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+        }
+        .btn-success {
+            background-color: #28a745;
+            border: none;
+        }
+        .btn-warning {
+            background-color: #ffc107;
+            border: none;
+        }
+        .btn-primary:hover,
+        .btn-success:hover,
+        .btn-warning:hover {
+            opacity: 0.8;
+        }
+    </style>
 </head>
 <body>
-    <h1>Ride Details</h1>
-    <p>Start Location: {{ ride.start_loc }}</p>
-    <p>Destination: {{ ride.destination }}</p>
-    <p>Rider Pays: {{ ride.riderpays }}</p>
-    
-    {% if ride.hosted_by %}
-        <p>Hosted By: {{ ride.hosted_by.username }}</p>
-    {% else %}
-        <form method="post">
-            {% csrf_token %}
-            <input type="submit" value="Accept Ride">
-        </form>
-    {% endif %}
-    
-    {% if ride.hosted_by == request.user and ride.ride_status == 'accepted' %}
-        <p>Rider Phone Number: {{ rider_phone_number }}</p> <!-- Display rider's phone number here -->
-        <form action="{% url 'start_ride' ride.id %}" method="post">
-            {% csrf_token %}
-            <input type="submit" value="Start Ride">
-        </form>
-    {% endif %}
-    
-    {% if ride.hosted_by == request.user and ride.ride_status == 'started' %}
-        <form action="{% url 'end_ride' ride.id %}" method="post">
-            {% csrf_token %}
-            <input type="submit" value="End Ride">
-        </form>
-    {% endif %}
+    <div class="container">
+        <h1>Ride Details</h1>
+        <p>Start Location: {{ ride.start_loc }}</p>
+        <p>Destination: {{ ride.destination }}</p>
+        <p>Rider Pays: {{ ride.riderpays }}</p>
+        
+        {% if ride.hosted_by %}
+            <p>Hosted By: {{ ride.hosted_by.profile.fullname }}</p>
+        {% else %}
+            <form method="post">
+                {% csrf_token %}
+                <input type="submit" class="btn btn-primary" value="Accept Ride">
+            </form>
+        {% endif %}
+        
+        {% if ride.hosted_by == request.user and ride.ride_status == 'accepted' %}
+            <p>Rider Phone Number: {{ rider_phone_number }}</p>
+            <form action="{% url 'start_ride' ride.id %}" method="post">
+                {% csrf_token %}
+                <input type="submit" class="btn btn-success" value="Start Ride">
+            </form>
+        {% endif %}
+        
+        {% if ride.hosted_by == request.user and ride.ride_status == 'started' %}
+            <form action="{% url 'end_ride' ride.id %}" method="post">
+                {% csrf_token %}
+                <input type="submit" class="btn btn-warning" value="End Ride">
+            </form>
+        {% endif %}
 
-    {% if ride.hosted_by == request.user and ride.ride_status == 'ended' %}
-        <h2>Review the Rider</h2>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Submit Review</button>
-        </form>
-    {% endif %}
+        {% if ride.hosted_by == request.user and ride.ride_status == 'ended' %}
+            <p>Your Review: {{ ride.rider_review }}</p>
+        {% endif %}
+    </div>
 
+    <!-- Include Bootstrap JS (optional) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

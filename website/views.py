@@ -249,7 +249,7 @@ def ride_details(request, ride_id):
     ride = get_object_or_404(Ride, pk=ride_id)
     form = AcceptRideForm(request.POST or None, user=request.user)
     
-    if request.method == 'POST' and form.is_valid():
+    if (ride.ride_status == 'requested') and (request.method == 'POST' and form.is_valid()):
         ride.hosted_by = request.user
         ride.ride_status = 'accepted'
         ride.save()
@@ -257,22 +257,13 @@ def ride_details(request, ride_id):
         rider_email = ride.rider.user.email
         host_name = ride.hosted_by.profile.fullname
         host_phone_number = ride.hosted_by.profile.phone_number
-        send_mail_ride_accepted(rider_email, host_name, host_phone_number)
+        # send_mail_ride_accepted(rider_email, host_name, host_phone_number)
 
         return redirect('ride_details', ride_id=ride_id)
     
     rider_phone_number = ride.rider.user.profile.phone_number
-    
-    if ride.ride_status == 'ended' and request.user == ride.hosted_by:
-        host_review_form = RideReviewForm(request.POST or None)
-        if request.method == 'POST' and host_review_form.is_valid():
-            ride.rider_review = host_review_form.cleaned_data['rider_review']
-            ride.save()
-            return redirect('/')
-    else:
-        host_review_form = None
 
-    return render(request, 'ride_details.html', {'ride': ride, 'form': form, 'rider_phone_number': rider_phone_number, 'host_review_form': host_review_form})
+    return render(request, 'ride_details.html', {'ride': ride, 'form': form, 'rider_phone_number': rider_phone_number})
 
 
 
@@ -291,6 +282,13 @@ def start_ride(request, ride_id):
 
 def end_ride(request, ride_id):
     ride = get_object_or_404(Ride, pk=ride_id)
-    ride.ride_status = 'ended'
-    ride.save()
-    return redirect('ride_details', ride_id=ride_id)
+    if request.method == 'POST':
+        form = RideReviewForm(request.POST)
+        if form.is_valid():
+            ride.rider_review = form.cleaned_data['rider_review']
+            ride.ride_status = 'ended'
+            ride.save()
+            return redirect('ride_details', ride_id=ride_id)
+    else:
+        form = RideReviewForm()
+    return render(request, 'end_ride.html', {'form': form})
