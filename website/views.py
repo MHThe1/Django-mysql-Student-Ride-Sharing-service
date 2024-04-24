@@ -268,21 +268,16 @@ def ride_monitor(request, ride_id):
 
 
 def requested_rides(request):
-    # Get all requested rides
     requested_rides = Ride.objects.filter(ride_status='requested').order_by('-created_at')
 
-    # Check if ride_type parameter is in the request GET parameters
     ride_type = request.GET.get('ride_type')
 
-    # Filter rides based on ride_type if it's provided
     if ride_type:
         if ride_type == 'both':
-            # No need to filter if both bike and car are selected
             pass
         else:
             requested_rides = requested_rides.filter(ride_type=ride_type)
 
-    # Pass the filtered rides to the template
     return render(request, 'requested_rides.html', {'requested_rides': requested_rides})
 
 
@@ -299,7 +294,7 @@ def ride_details(request, ride_id):
         rider_email = ride.rider.user.email
         host_name = ride.hosted_by.profile.fullname
         host_phone_number = ride.hosted_by.profile.phone_number
-        # send_mail_ride_accepted(rider_email, host_name, host_phone_number)
+        send_mail_ride_accepted(rider_email, host_name, host_phone_number)
 
         return redirect('ride_details', ride_id=ride_id)
     
