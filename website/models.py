@@ -1,7 +1,7 @@
-from datetime import timezone
+
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.utils import timezone
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -79,3 +79,21 @@ class Ride(models.Model):
     def delete_if_requested(self):
         if self.ride_status == 'requested' and timezone.now() > self.created_at + timezone.timedelta(hours=5):
             self.delete()
+
+    @property
+    def time_since_creation(self):
+        time_diff = timezone.now() - self.created_at
+        hours = time_diff.total_seconds() // 3600
+        minutes = (time_diff.total_seconds() % 3600) // 60
+        if hours==0:
+            return f"{int(minutes)} minutes ago"
+        return f"{int(hours)} hour(s), {int(minutes)} minutes ago"
+    
+    @property
+    def time_since_updation(self):
+        time_diff = timezone.now() - self.updated_at
+        hours = time_diff.total_seconds() // 3600
+        minutes = (time_diff.total_seconds() % 3600) // 60
+        if hours==0:
+            return f"{int(minutes)} minutes ago"
+        return f"{int(hours)} hour(s), {int(minutes)} minutes ago"

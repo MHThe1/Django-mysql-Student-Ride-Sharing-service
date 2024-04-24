@@ -14,6 +14,7 @@ urlpatterns = [
     path('dl_registration/', views.dl_registration, name='dl_registration'),
     path('cost_estimate/', views.cost_estimate, name='cost_estimate'),
     path('from_bracu/', views.ridebracu, name='from_bracu'),
+    path('to_bracu/', views.tobracu, name='to_bracu'),
     path('ride_requests/', views.requested_rides, name='requested_rides'),
     path('ride/<int:ride_id>/', views.ride_details, name='ride_details'),
     path('ride/<int:ride_id>/start/', views.start_ride, name='start_ride'),

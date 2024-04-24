@@ -204,6 +204,34 @@ def ridebracu(request):
     return render(request, 'from_bracu.html', {'form': form})
 
 
+def tobracu(request):
+    if 'term' in request.GET:
+        qs = Location.objects.filter(location_name__istartswith=request.GET.get('term'))
+        lnames = list()
+        for loca in qs:
+            lnames.append(loca.location_name)
+        return JsonResponse(lnames, safe=False)
+    
+    if request.method == 'POST':
+        current_user_profile = request.user.profile
+        form = RideForm(request.POST, request.FILES)
+        
+        if form.is_valid():
+            new_ride = form.save(commit=False)
+            new_ride.rider = current_user_profile
+            new_ride.riderpays = ride_cost(new_ride.start_loc, new_ride.destination, new_ride.ride_type, new_ride.ride_capacity)
+            new_ride.save()
+            
+            return redirect('ride_monitor', ride_id=new_ride.pk)
+        else:
+            messages.error(request, "Form validation failed!")
+
+    else:
+        form = RideForm()
+        
+    return render(request, 'to_bracu.html', {'form': form})
+
+
 def ride_cost(start_loc, destination, r_type, r_capacity):
     if start_loc == "BRAC University":
         qd = Location.objects.get(location_name=destination)
@@ -240,7 +268,21 @@ def ride_monitor(request, ride_id):
 
 
 def requested_rides(request):
-    requested_rides = Ride.objects.filter(ride_status='requested')
+    # Get all requested rides
+    requested_rides = Ride.objects.filter(ride_status='requested').order_by('-created_at')
+
+    # Check if ride_type parameter is in the request GET parameters
+    ride_type = request.GET.get('ride_type')
+
+    # Filter rides based on ride_type if it's provided
+    if ride_type:
+        if ride_type == 'both':
+            # No need to filter if both bike and car are selected
+            pass
+        else:
+            requested_rides = requested_rides.filter(ride_type=ride_type)
+
+    # Pass the filtered rides to the template
     return render(request, 'requested_rides.html', {'requested_rides': requested_rides})
 
 
