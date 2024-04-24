@@ -1,0 +1,131 @@
+{% extends 'header.html' %}
+
+{% block content %}
+
+{% if user.is_authenticated %}
+
+<style>
+    body {
+        background-color: #f7f7f7;
+    }
+
+    .container {
+        max-width: 600px;
+        margin-top: 50px;
+        background: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    button[type="submit"] {
+        width: 100%;
+        padding: 10px;
+        margin-top: 20px;
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        color: white;
+    }
+
+    button[type="submit"]:hover {
+        background-color: #0056b3;
+    }
+</style>
+
+<div class="container">
+    <h2>Ride Booking Form</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="startLocation">Start Location:</label>
+            <input type="hidden" id="startLocationHidden" name="start_loc" value="BRAC University">
+            <input type="text" id="startLocation" class="form-control" value="BRAC University" disabled>
+        </div>
+        <div class="form-group">
+            <label for="destination">Destination:</label>
+            <input type="text" id="destinations" class="form-control" name="destination" required>
+        </div>
+        <div class="form-group">
+            <label for="paymentMethod">Payment Method:</label>
+            <select id="paymentMethod" class="form-control" name="payment_method">
+                <option value="cash">Cash</option>
+                <option value="bkash">Bkash</option>
+                <option value="nagad">Nagad</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="vehicleTypeSelect">Vehicle Type:</label>
+            <select id="vehicleTypeSelect" class="form-control" name="ride_type" onchange="updateCapacityOptions()">
+                <option value="car">Car</option>
+                <option value="bike">Bike</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="capacitySelect">Vehicle Capacity:</label>
+            <select id="capacitySelect" name="ride_capacity" class="form-control">
+            </select>
+        </div>
+        <div id="rideInfo" class="mt-4">
+            <h4>Ride Information</h4>
+            <p><strong>Host:</strong> <span id="host">---</span></p>
+            <p><strong>Ride Status:</strong> <span id="rideStatus">---</span></p>
+            <p><strong>Rider Pays:</strong> <span id="riderPays">---</span></p>
+        </div>
+        <button type="submit" id="submitBtn" class="btn btn-primary">Book Ride</button>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+
+<script>
+    function updateCapacityOptions() {
+        var vehicleType = document.getElementById('vehicleTypeSelect').value;
+        var capacitySelect = document.getElementById('capacitySelect');
+
+        while (capacitySelect.firstChild) {
+            capacitySelect.removeChild(capacitySelect.firstChild);
+        }
+
+        if (vehicleType === 'bike') {
+            var option = document.createElement('option');
+            option.value = 1;
+            option.text = '1';
+            capacitySelect.appendChild(option);
+        } else {
+            for (var i = 1; i <= 7; i++) {
+                var option = document.createElement('option');
+                option.value = i;
+                option.text = i;
+                capacitySelect.appendChild(option);
+            }
+        }
+    }
+    document.addEventListener('DOMContentLoaded', updateCapacityOptions);
+
+</script>
+
+
+<script>
+    $(function () {
+        $("#destinations").autocomplete({
+            source: "{% url 'from_bracu' %}"
+        });
+    });
+</script>
+
+{% else %}
+<h1>Please Register or Login First</h1>
+{% endif %}
+
+{% endblock %}

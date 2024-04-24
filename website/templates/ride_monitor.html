@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ride Monitoring</title>
+</head>
+<body>
+    <h1>Ride Details</h1>
+    <p>Start Location: {{ ride.start_loc }}</p>
+    <p>Destination: {{ ride.destination }}</p>
+    <p>Ride Status: {{ ride.ride_status }}</p>
+    
+    {% if ride.ride_status == 'ended' %}
+        <h2>Review the Host</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Submit Review</button>
+        </form>
+    {% endif %}
+</body>
+</html>

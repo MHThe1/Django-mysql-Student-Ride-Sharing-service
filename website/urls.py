@@ -13,4 +13,11 @@ urlpatterns = [
     path('vehicle_registration/', views.vehicle_registration, name='vehicle_registration'),
     path('dl_registration/', views.dl_registration, name='dl_registration'),
     path('cost_estimate/', views.cost_estimate, name='cost_estimate'),
+    path('from_bracu/', views.ridebracu, name='from_bracu'),
+    path('ride_requests/', views.requested_rides, name='requested_rides'),
+    path('ride/<int:ride_id>/', views.ride_details, name='ride_details'),
+    path('ride/<int:ride_id>/start/', views.start_ride, name='start_ride'),
+    path('ride/<int:ride_id>/end/', views.end_ride, name='end_ride'),
+    path('ride_created/<int:ride_id>/', views.ride_created, name='ride_created'),
+    path('ride_monitor/<int:ride_id>/', views.ride_monitor, name='ride_monitor'),
 ]

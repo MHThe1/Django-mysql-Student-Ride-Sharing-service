@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Requested Rides</title>
+</head>
+<body>
+    <h1>Requested Rides</h1>
+    <ul>
+        {% for ride in requested_rides %}
+            <li>
+                {{ ride.start_loc }} to {{ ride.destination }}
+                <a href="{% url 'ride_details' ride.id %}">View Details</a>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

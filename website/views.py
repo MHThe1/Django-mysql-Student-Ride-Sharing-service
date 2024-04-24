@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -174,3 +174,123 @@ def cost_estimate(request):
         return JsonResponse(lnames, safe=False)
 
     return render(request, 'cost_estimate.html')
+
+
+def ridebracu(request):
+    if 'term' in request.GET:
+        qs = Location.objects.filter(location_name__istartswith=request.GET.get('term'))
+        lnames = list()
+        for loca in qs:
+            lnames.append(loca.location_name)
+        return JsonResponse(lnames, safe=False)
+    
+    if request.method == 'POST':
+        current_user_profile = request.user.profile
+        form = RideForm(request.POST, request.FILES)
+        
+        if form.is_valid():
+            new_ride = form.save(commit=False)
+            new_ride.rider = current_user_profile
+            new_ride.riderpays = ride_cost(new_ride.start_loc, new_ride.destination, new_ride.ride_type, new_ride.ride_capacity)
+            new_ride.save()
+            
+            return redirect('ride_monitor', ride_id=new_ride.pk)
+        else:
+            messages.error(request, "Form validation failed!")
+
+    else:
+        form = RideForm()
+        
+    return render(request, 'from_bracu.html', {'form': form})
+
+
+def ride_cost(start_loc, destination, r_type, r_capacity):
+    if start_loc == "BRAC University":
+        qd = Location.objects.get(location_name=destination)
+    else:
+        qd = Location.objects.get(location_name=start_loc)
+    
+
+
+    r_distance = qd.distance
+    if r_type == "bike":
+        r_cost = r_distance*30
+    else:
+        if r_capacity < 4:
+            r_cost = r_distance*80
+        else:
+            r_cost = r_distance*r_capacity*30
+
+    return r_cost
+
+def ride_created(request, ride_id):
+    return redirect('ride_monitor', ride_id=ride_id)
+
+def ride_monitor(request, ride_id):
+    ride = get_object_or_404(Ride, pk=ride_id)
+    if request.method == 'POST':
+        form = HostReviewForm(request.POST)
+        if form.is_valid():
+            ride.host_review = form.cleaned_data['host_review']
+            ride.save()
+            return redirect('/')
+    else:
+        form = HostReviewForm()
+    return render(request, 'ride_monitor.html', {'ride': ride, 'form': form})
+
+
+def requested_rides(request):
+    requested_rides = Ride.objects.filter(ride_status='requested')
+    return render(request, 'requested_rides.html', {'requested_rides': requested_rides})
+
+
+
+def ride_details(request, ride_id):
+    ride = get_object_or_404(Ride, pk=ride_id)
+    form = AcceptRideForm(request.POST or None, user=request.user)
+    
+    if request.method == 'POST' and form.is_valid():
+        ride.hosted_by = request.user
+        ride.ride_status = 'accepted'
+        ride.save()
+
+        rider_email = ride.rider.user.email
+        host_name = ride.hosted_by.profile.fullname
+        host_phone_number = ride.hosted_by.profile.phone_number
+        send_mail_ride_accepted(rider_email, host_name, host_phone_number)
+
+        return redirect('ride_details', ride_id=ride_id)
+    
+    rider_phone_number = ride.rider.user.profile.phone_number
+    
+    if ride.ride_status == 'ended' and request.user == ride.hosted_by:
+        host_review_form = RideReviewForm(request.POST or None)
+        if request.method == 'POST' and host_review_form.is_valid():
+            ride.rider_review = host_review_form.cleaned_data['rider_review']
+            ride.save()
+            return redirect('/')
+    else:
+        host_review_form = None
+
+    return render(request, 'ride_details.html', {'ride': ride, 'form': form, 'rider_phone_number': rider_phone_number, 'host_review_form': host_review_form})
+
+
+
+def send_mail_ride_accepted(email, host, host_phone):
+    subject = f"{host} has accepted your ride request"
+    message = f'{host} has accepted your ride request, to contact here is his/her/their phone number: {host_phone}'
+    email_from = settings.EMAIL_HOST_USER
+    recipient_list = [email]
+    send_mail(subject, message, email_from, recipient_list)
+
+def start_ride(request, ride_id):
+    ride = get_object_or_404(Ride, pk=ride_id)
+    ride.ride_status = 'started'
+    ride.save()
+    return redirect('ride_details', ride_id=ride_id)
+
+def end_ride(request, ride_id):
+    ride = get_object_or_404(Ride, pk=ride_id)
+    ride.ride_status = 'ended'
+    ride.save()
+    return redirect('ride_details', ride_id=ride_id)

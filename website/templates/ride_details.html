@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ride Details</title>
+</head>
+<body>
+    <h1>Ride Details</h1>
+    <p>Start Location: {{ ride.start_loc }}</p>
+    <p>Destination: {{ ride.destination }}</p>
+    <p>Rider Pays: {{ ride.riderpays }}</p>
+    
+    {% if ride.hosted_by %}
+        <p>Hosted By: {{ ride.hosted_by.username }}</p>
+    {% else %}
+        <form method="post">
+            {% csrf_token %}
+            <input type="submit" value="Accept Ride">
+        </form>
+    {% endif %}
+    
+    {% if ride.hosted_by == request.user and ride.ride_status == 'accepted' %}
+        <p>Rider Phone Number: {{ rider_phone_number }}</p> <!-- Display rider's phone number here -->
+        <form action="{% url 'start_ride' ride.id %}" method="post">
+            {% csrf_token %}
+            <input type="submit" value="Start Ride">
+        </form>
+    {% endif %}
+    
+    {% if ride.hosted_by == request.user and ride.ride_status == 'started' %}
+        <form action="{% url 'end_ride' ride.id %}" method="post">
+            {% csrf_token %}
+            <input type="submit" value="End Ride">
+        </form>
+    {% endif %}
+
+    {% if ride.hosted_by == request.user and ride.ride_status == 'ended' %}
+        <h2>Review the Rider</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Submit Review</button>
+        </form>
+    {% endif %}
+
+</body>
+</html>

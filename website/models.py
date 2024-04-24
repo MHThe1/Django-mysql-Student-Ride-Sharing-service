@@ -1,3 +1,4 @@
+from datetime import timezone
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -54,3 +55,27 @@ class Location(models.Model):
 
     def __str__(self):
         return self.location_name
+    
+
+class Ride(models.Model):
+    rider = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    start_loc = models.CharField(max_length=40)
+    destination = models.CharField(max_length=40)
+    riderpays = models.DecimalField(max_digits=6, decimal_places=2)
+    hosted_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    payment_method = models.CharField(max_length=10)
+    ride_status = models.CharField(default='requested', max_length=10)
+    ride_capacity = models.IntegerField()
+    ride_type = models.CharField(max_length=4)
+    rider_review = models.IntegerField(default=5)
+    host_review = models.IntegerField(default=5)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.start_loc} to {self.destination}"
+    
+    def delete_if_requested(self):
+        if self.ride_status == 'requested' and timezone.now() > self.created_at + timezone.timedelta(hours=5):
+            self.delete()
