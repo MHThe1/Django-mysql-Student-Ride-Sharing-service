@@ -10,6 +10,8 @@ from django.core.mail import send_mail
 from .forms import *
 from django.http import JsonResponse
 
+from geopy.geocoders import Nominatim
+from geopy.distance import geodesic
 
 def home(request):
     if request.method == 'POST':
@@ -232,15 +234,28 @@ def tobracu(request):
     return render(request, 'to_bracu.html', {'form': form})
 
 
-def ride_cost(start_loc, destination, r_type, r_capacity):
-    if start_loc == "BRAC University":
-        qd = Location.objects.get(location_name=destination)
+def get_coordinates(location_name):
+    geolocator = Nominatim(user_agent="distance_calculator")
+    location = geolocator.geocode(location_name)
+    if location:
+        return location.latitude, location.longitude
     else:
-        qd = Location.objects.get(location_name=start_loc)
-    
+        return None
+
+def calculate_distance(location1_name, location2_name):
+    location1_coords = get_coordinates(location1_name)
+    location2_coords = get_coordinates(location2_name)
+
+    if location1_coords and location2_coords:
+        distance = geodesic(location1_coords, location2_coords).kilometers
+        return distance
+    else:
+        return None
 
 
-    r_distance = qd.distance
+def ride_cost(start_loc, destination, r_type, r_capacity):
+
+    r_distance = calculate_distance(start_loc, destination)
     if r_type == "bike":
         r_cost = r_distance*30
     else:
@@ -250,6 +265,9 @@ def ride_cost(start_loc, destination, r_type, r_capacity):
             r_cost = r_distance*r_capacity*30
 
     return r_cost
+
+
+
 
 def ride_created(request, ride_id):
     return redirect('ride_monitor', ride_id=ride_id)
@@ -401,3 +419,7 @@ def scheduled_rides(request):
             scheduled_rides = scheduled_rides.filter(ride_type=ride_type)
 
     return render(request, 'scheduled_rides.html', {'scheduled_rides': scheduled_rides})
+
+
+
+

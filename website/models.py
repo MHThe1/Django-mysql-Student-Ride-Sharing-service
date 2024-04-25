@@ -49,10 +49,7 @@ class Driver(models.Model):
 
 
 class Location(models.Model):
-    location_name = models.CharField(max_length=40)
-    latitude = models.CharField(max_length=100)
-    longitude = models.CharField(max_length=100)
-    distance = models.DecimalField(null=True, max_digits=4, decimal_places=2)
+    location_name = models.CharField(max_length=300)
 
     def __str__(self):
         return self.location_name
