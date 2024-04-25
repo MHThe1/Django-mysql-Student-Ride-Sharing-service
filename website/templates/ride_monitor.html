@@ -25,9 +25,19 @@
         margin-bottom: 10px;
     }
 
-    h2 {
-        font-size: 20px;
-        margin-top: 20px;
+    .ride-type {
+        font-weight: bold;
+        color: #28a745;
+    }
+
+    .ride-capacity {
+        font-weight: bold;
+        color: #d44333;
+    }
+
+    .location {
+        display: block;
+        margin-bottom: 5px;
     }
 
     .btn {
@@ -41,21 +51,51 @@
         border: none;
     }
 
-    .btn-primary:hover {
+    .btn-success {
+        background-color: #28a745;
+        border: none;
+    }
+
+    .btn-warning {
+        background-color: #ffc107;
+        border: none;
+    }
+
+    .btn-primary:hover,
+    .btn-success:hover,
+    .btn-warning:hover {
         opacity: 0.8;
     }
 </style>
 
-<div class="container">
+<div class="container" align="center">
     <h1>Ride Details</h1>
-    <p>Start Location: {{ ride.start_loc }}</p>
-    <p>Destination: {{ ride.destination }}</p>
-    <p>Ride Status: {{ ride.ride_status }}</p>
+    <span class="location">From: <strong> {{ ride.start_loc }}</strong></span>
+    <span class="location">To: <strong>{{ ride.destination }}</strong></span>
+    <span class="location">Incentive: <strong>{{ ride.riderpays }} TK</strong></span>
+    <span class="location">Vehicle Type: <strong>{{ ride.ride_type }} </strong></span>
+    <span class="location">Capacity: <strong>{{ ride.ride_capacity }} person</strong></span>
+    <span class="ride-capacity">{{ ride.ride_status }} {{ ride.time_since_creation }}</span>
+    <br>
 
     {% if ride.ride_status == 'scheduled' %}
     <form method="post">
         {% csrf_token %}
         <input type="submit" class="btn btn-primary" value="Book Ride">
+    </form>
+    {% endif %}
+
+    {% if ride.ride_status == 'accepted' %}
+    {% if ride.rider == user.request %}
+    <span class="location">Phone Number: <strong> {{ ride.hosted_by.profile.phone_number }}</strong></span>
+    {% endif %}
+    {% endif %}
+
+    {% if ride.ride_status == 'requested' or ride.ride_status == 'accepted' %}
+    <br>
+    <form action="{% url 'delete_ride' ride.id %}" method="post">
+        {% csrf_token %}
+        <input type="submit" class="btn btn-danger" value="Delete Ride">
     </form>
     {% endif %}
 
@@ -69,14 +109,16 @@
     {% endif %}
 </div>
 
-<!-- Include Bootstrap JS (optional) -->
+
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 
 {% else %}
-<h1>Please Register or Login First</h1>
+<h1>IDENTITY THEFT IS NO JOKE, JIM.<br/>
+    THOUSANDS OF FAMILIES SUFFER EVERY YEAR.
+</h1>
 {% endif %}
 
 {% endblock %}

@@ -1,0 +1,134 @@
+{% extends 'header.html' %}
+
+{% block content %}
+
+{% if user.is_authenticated %}
+
+<style>
+    body {
+        background-color: #f7f7f7;
+    }
+
+    .container {
+        max-width: 600px;
+        margin-top: 50px;
+        background: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    button[type="submit"] {
+        width: 100%;
+        padding: 10px;
+        margin-top: 20px;
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        color: white;
+    }
+
+    button[type="submit"]:hover {
+        background-color: #0056b3;
+    }
+</style>
+
+<div class="container">
+    <h2>Ride Scheduling Form</h2>
+    {{ form.errors }}
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="startLocation">Start Location:</label>
+            <input type="text" id="start_locs" class="form-control" name="start_loc" required>
+        </div>
+        <div class="form-group">
+            <label for="destination">Destination:</label>
+            <input type="hidden" id="destinationHidden" name="destination" value="BRAC University">
+            <input type="text" id="destination" class="form-control" value="BRAC University" disabled>
+        </div>
+        <div class="form-group">
+            <label for="paymentMethod">Payment Method:</label>
+            <select id="paymentMethod" class="form-control" name="payment_method">
+                <option value="cash">Cash</option>
+                <option value="bkash">Bkash</option>
+                <option value="nagad">Nagad</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="vehicleTypeSelect">Vehicle Type:</label>
+            <select id="vehicleTypeSelect" class="form-control" name="ride_type" onchange="updateCapacityOptions()">
+                <option value="car">Car</option>
+                <option value="bike">Bike</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="capacitySelect">Available Capacity:</label>
+            <select id="capacitySelect" name="ride_capacity" class="form-control">
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="destination">Start Time:</label>
+            <input type="datetime-local" class="form-control" name="start_time" required>
+        </div>
+        <div class="form-group">
+            <label for="notes">Notes (optional):</label>
+            <input type="text" class="form-control" id="notes" name="host_note">
+        </div>
+        <button type="submit" id="submitBtn" class="btn btn-primary">Schedule Ride</button>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+
+<script>
+    function updateCapacityOptions() {
+        var vehicleType = document.getElementById('vehicleTypeSelect').value;
+        var capacitySelect = document.getElementById('capacitySelect');
+
+        while (capacitySelect.firstChild) {
+            capacitySelect.removeChild(capacitySelect.firstChild);
+        }
+
+        if (vehicleType === 'bike') {
+            var option = document.createElement('option');
+            option.value = 1;
+            option.text = '1';
+            capacitySelect.appendChild(option);
+        } else {
+            for (var i = 1; i <= 7; i++) {
+                var option = document.createElement('option');
+                option.value = i;
+                option.text = i;
+                capacitySelect.appendChild(option);
+            }
+        }
+    }
+    document.addEventListener('DOMContentLoaded', updateCapacityOptions);
+
+</script>
+
+
+<script>
+    $(function () {
+        $("#start_locs").autocomplete({
+            source: "{% url 'from_bracu' %}"
+        });
+    });
+</script>
+
+{% else %}
+<h1>Please Register or Login First</h1>
+{% endif %}
+
+{% endblock %}

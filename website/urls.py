@@ -13,6 +13,7 @@ urlpatterns = [
     path('vehicle_registration/', views.vehicle_registration, name='vehicle_registration'),
     path('dl_registration/', views.dl_registration, name='dl_registration'),
     path('cost_estimate/', views.cost_estimate, name='cost_estimate'),
+    path('book_ride/', views.bookride, name='book_ride'),
     path('from_bracu/', views.ridebracu, name='from_bracu'),
     path('to_bracu/', views.tobracu, name='to_bracu'),
     path('ride_requests/', views.requested_rides, name='requested_rides'),
@@ -21,6 +22,10 @@ urlpatterns = [
     path('ride/<int:ride_id>/end/', views.end_ride, name='end_ride'),
     path('ride_created/<int:ride_id>/', views.ride_created, name='ride_created'),
     path('ride_monitor/<int:ride_id>/', views.ride_monitor, name='ride_monitor'),
+    path('schedule_ride/', views.scheduleride, name='schedule_ride'),
     path('schedule_from_bracu/', views.schridebracu, name='schedule_from_bracu'),
+    path('schedule_to_bracu/', views.schtobracu, name='schedule_to_bracu'),
     path('scheduled_rides/', views.scheduled_rides, name='scheduled_rides'),
+    path('ride/<int:ride_id>/delete/', views.delete_ride, name='delete_ride'),
+
 ]
