@@ -15,6 +15,8 @@ class Profile(models.Model):
     rating = models.FloatField(default=5)
     profile_pic = models.ImageField(null=True, blank=True, upload_to='profile_pics', default='default.png')
 
+    is_host = models.BooleanField(default=False)
+
     def __str__(self):
         return self.user.username
     
