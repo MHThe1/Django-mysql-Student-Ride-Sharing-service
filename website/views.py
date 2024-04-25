@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.urls import reverse
 from .models import *
 import uuid
 from django.conf import settings
@@ -185,12 +186,11 @@ def ridebracu(request):
         return JsonResponse(lnames, safe=False)
     
     if request.method == 'POST':
-        current_user_profile = request.user.profile
         form = RideForm(request.POST, request.FILES)
         
         if form.is_valid():
             new_ride = form.save(commit=False)
-            new_ride.rider = current_user_profile
+            new_ride.rider = request.user
             new_ride.riderpays = ride_cost(new_ride.start_loc, new_ride.destination, new_ride.ride_type, new_ride.ride_capacity)
             new_ride.save()
             
@@ -256,7 +256,22 @@ def ride_created(request, ride_id):
 
 def ride_monitor(request, ride_id):
     ride = get_object_or_404(Ride, pk=ride_id)
-    if request.method == 'POST':
+    form = BookRideForm(request.POST or None, user=request.user)
+
+    if (ride.ride_status == 'scheduled') and (request.method == 'POST' and form.is_valid()):
+        ride.rider = request.user
+        ride.ride_status = 'accepted'
+        ride.save()
+
+        host_email = ride.hosted_by.email
+        rider_name = ride.rider.profile.fullname
+        rider_phone_number = ride.rider.profile.phone_number
+        ride_url = request.build_absolute_uri(reverse('ride_details', kwargs={'ride_id': ride_id}))
+        send_mail_ride_booked(host_email, rider_name, rider_phone_number, ride_url)
+
+        return redirect('ride_monitor', ride_id=ride_id)
+    
+    if ride.ride_status != 'scheduled' and request.method == 'POST':
         form = HostReviewForm(request.POST)
         if form.is_valid():
             ride.host_review = form.cleaned_data['host_review']
@@ -265,6 +280,14 @@ def ride_monitor(request, ride_id):
     else:
         form = HostReviewForm()
     return render(request, 'ride_monitor.html', {'ride': ride, 'form': form})
+
+
+def send_mail_ride_booked(email, rider, rider_phone, ride_url):
+    subject = f"{rider} has booked your scheduled ride"
+    message = f'{rider} has booked your scheduled ride, to contact here is his/her/their phone number: {rider_phone}\nView Ride: {ride_url}'
+    email_from = settings.EMAIL_HOST_USER
+    recipient_list = [email]
+    send_mail(subject, message, email_from, recipient_list)
 
 
 def requested_rides(request):
@@ -291,16 +314,20 @@ def ride_details(request, ride_id):
         ride.ride_status = 'accepted'
         ride.save()
 
-        rider_email = ride.rider.user.email
+        rider_email = ride.rider.email
         host_name = ride.hosted_by.profile.fullname
         host_phone_number = ride.hosted_by.profile.phone_number
         send_mail_ride_accepted(rider_email, host_name, host_phone_number)
 
         return redirect('ride_details', ride_id=ride_id)
     
-    rider_phone_number = ride.rider.user.profile.phone_number
+    if not ride.ride_status == 'scheduled':
+        rider_phone_number = ride.rider.profile.phone_number
 
-    return render(request, 'ride_details.html', {'ride': ride, 'form': form, 'rider_phone_number': rider_phone_number})
+        return render(request, 'ride_details.html', {'ride': ride, 'form': form, 'rider_phone_number': rider_phone_number})
+
+    else:
+        return render(request, 'ride_details.html', {'ride': ride, 'form': form})
 
 
 
@@ -329,3 +356,48 @@ def end_ride(request, ride_id):
     else:
         form = RideReviewForm()
     return render(request, 'end_ride.html', {'form': form})
+
+
+
+def schridebracu(request):
+    if 'term' in request.GET:
+        qs = Location.objects.filter(location_name__istartswith=request.GET.get('term'))
+        lnames = list()
+        for loca in qs:
+            lnames.append(loca.location_name)
+        return JsonResponse(lnames, safe=False)
+    
+    if request.method == 'POST':
+        form = RideForm(request.POST, request.FILES)
+        
+        if form.is_valid():
+            new_ride = form.save(commit=False)
+            new_ride.hosted_by = request.user
+            new_ride.ride_status = 'scheduled'
+            new_ride.riderpays = ride_cost(new_ride.start_loc, new_ride.destination, new_ride.ride_type, new_ride.ride_capacity)
+            new_ride.save()
+            
+            return redirect('ride_details', ride_id=new_ride.pk)
+        else:
+            messages.error(request, "Form validation failed!")
+
+    else:
+        form = RideForm()
+        
+    return render(request, 'schedule_from_bracu.html', {'form': form})
+
+
+
+
+def scheduled_rides(request):
+    scheduled_rides = Ride.objects.filter(ride_status='scheduled').order_by('start_time')
+
+    ride_type = request.GET.get('ride_type')
+
+    if ride_type:
+        if ride_type == 'both':
+            pass
+        else:
+            scheduled_rides = scheduled_rides.filter(ride_type=ride_type)
+
+    return render(request, 'scheduled_rides.html', {'scheduled_rides': scheduled_rides})

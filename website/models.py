@@ -22,7 +22,7 @@ class Profile(models.Model):
     
 
 class Vehicle(models.Model):
-    host = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    host = models.ForeignKey(User, on_delete=models.CASCADE)
     vehicle_type = models.CharField(max_length=4, default='Car')
     vehicle_model = models.CharField(max_length=25)
     vehicle_reg = models.CharField(max_length=20, unique=True)
@@ -36,7 +36,7 @@ class Vehicle(models.Model):
     
 
 class Driver(models.Model):
-    host = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    host = models.ForeignKey(User, on_delete=models.CASCADE)
     dl_type = models.CharField(max_length=4, default='Car')
     is_that_host = models.BooleanField(default=True)
     driver_name = models.CharField(max_length=100, null=True, blank=True,)
@@ -50,7 +50,6 @@ class Driver(models.Model):
 
 class Location(models.Model):
     location_name = models.CharField(max_length=40)
-    loc_address = models.CharField(max_length=300)
     latitude = models.CharField(max_length=100)
     longitude = models.CharField(max_length=100)
     distance = models.DecimalField(null=True, max_digits=4, decimal_places=2)
@@ -60,11 +59,11 @@ class Location(models.Model):
     
 
 class Ride(models.Model):
-    rider = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    rider = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE, related_name='rides_as_rider')
     start_loc = models.CharField(max_length=40)
     destination = models.CharField(max_length=40)
     riderpays = models.DecimalField(max_digits=6, decimal_places=2)
-    hosted_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    hosted_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE, related_name='rides_as_host')
     payment_method = models.CharField(max_length=10)
     ride_status = models.CharField(default='requested', max_length=10)
     ride_capacity = models.IntegerField()
@@ -74,6 +73,10 @@ class Ride(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    start_time = models.DateTimeField(null=True, default=None)
+    rider_note = models.CharField(max_length=100, null=True, default=None)
+    host_note = models.CharField(max_length=100, null=True, default=None)
 
     def __str__(self):
         return f"{self.start_loc} to {self.destination}"
@@ -99,3 +102,16 @@ class Ride(models.Model):
         if hours==0:
             return f"{int(minutes)} minutes ago"
         return f"{int(hours)} hour(s), {int(minutes)} minutes ago"
+    
+    @property
+    def time_till_start(self):
+        time_diff = self.start_time - timezone.now()
+        hours = time_diff.total_seconds() // 3600
+        minutes = (time_diff.total_seconds() % 3600) // 60
+        if hours == 0:
+            return f"{int(minutes)} minutes"
+        return f"{int(hours)} hour(s), {int(minutes)} minutes"
+    
+    def delete_if_times_up(self):
+        if self.ride_status == 'scheduled' and timezone.now() > self.start_time:
+            self.delete()

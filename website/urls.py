@@ -21,4 +21,6 @@ urlpatterns = [
     path('ride/<int:ride_id>/end/', views.end_ride, name='end_ride'),
     path('ride_created/<int:ride_id>/', views.ride_created, name='ride_created'),
     path('ride_monitor/<int:ride_id>/', views.ride_monitor, name='ride_monitor'),
+    path('schedule_from_bracu/', views.schridebracu, name='schedule_from_bracu'),
+    path('scheduled_rides/', views.scheduled_rides, name='scheduled_rides'),
 ]

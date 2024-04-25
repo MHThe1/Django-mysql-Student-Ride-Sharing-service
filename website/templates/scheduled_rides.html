@@ -1,0 +1,113 @@
+{% extends 'header.html' %}
+
+{% block content %}
+
+{% if user.is_authenticated %}
+<style>
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+        color: #007bff;
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .box {
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+
+
+    a {
+        color: #007bff;
+        text-decoration: none;
+        display: block;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    .ride-type {
+        font-weight: bold;
+        color: #28a745;
+    }
+
+    .ride-capacity {
+        font-weight: bold;
+        color: #d44333;
+    }
+
+    .location {
+        display: block;
+        margin-bottom: 5px;
+    }
+</style>
+<div class="container">
+    <h1>Scheduled Rides</h1>
+    <label for="ride-type-select">Filter by Ride Type:</label>
+    <select id="ride-type-select" class="btn btn-primary dropdown-toggle">
+        <option value="all">All</option>
+        <option value="bike">Bike</option>
+        <option value="car">Car</option>
+    </select>
+    <ul id="ride-list">
+        {% for ride in scheduled_rides %}
+        <a href="{% url 'ride_monitor' ride.id %}">
+            <li class="ride-item box" data-ride-type="{{ ride.ride_type }}">
+                <span class="location"><strong> {{ ride.start_loc }}</strong> to <strong>{{ ride.destination }}</strong></span>
+                <span class="ride-capacity">Riders: <strong>{{ ride.ride_capacity }}</strong> || Ride Type: <strong>{{ ride.ride_type }}</strong></span>
+                <br>
+                <span class="ride-time-since">starts in {{ ride.time_till_start }}</span>
+                <span class="ride-time-since">starts at {{ ride.start_time }}</span>
+                <br>
+            </li>
+        </a>
+        {% endfor %}
+    </ul>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectElement = document.getElementById('ride-type-select');
+        selectElement.addEventListener('change', function () {
+            filterRides();
+        });
+
+        function filterRides() {
+            const selectedRideType = selectElement.value;
+            const rideItems = document.querySelectorAll('.ride-item');
+            rideItems.forEach(function (ride) {
+                const rideType = ride.getAttribute('data-ride-type');
+                if (selectedRideType === 'all' || selectedRideType === rideType) {
+                    ride.style.display = '';
+                } else {
+                    ride.style.display = 'none';
+                }
+            });
+        }
+    });
+</script>
+
+
+{% else %}
+<h1>You must <a href="{% url 'home' %}"> Login </a> or <a href="{% url 'register' %}"> Register First </a></h1>
+{% endif %}
+
+{% endblock %}

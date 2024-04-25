@@ -52,6 +52,13 @@
     <p>Destination: {{ ride.destination }}</p>
     <p>Ride Status: {{ ride.ride_status }}</p>
 
+    {% if ride.ride_status == 'scheduled' %}
+    <form method="post">
+        {% csrf_token %}
+        <input type="submit" class="btn btn-primary" value="Book Ride">
+    </form>
+    {% endif %}
+
     {% if ride.ride_status == 'ended' %}
     <h2>Review the Host</h2>
     <form method="post">

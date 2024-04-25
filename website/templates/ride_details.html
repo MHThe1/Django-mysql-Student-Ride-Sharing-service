@@ -85,6 +85,13 @@
     </form>
     {% endif %}
 
+
+    {% if ride.ride_status == 'scheduled' %}
+        <span class="ride-capacity">starts in {{ ride.time_till_start }}</span>
+        <br>
+        <strong>Please wait for your Scheduled Ride to be Booked!</strong>
+    {% endif %}
+
     {% if ride.hosted_by == request.user and ride.ride_status == 'accepted'%}
     <span class="location">Phone Number: <strong> {{ rider_phone_number }}</strong></span>
     <form action="{% url 'start_ride' ride.id %}" method="post">
