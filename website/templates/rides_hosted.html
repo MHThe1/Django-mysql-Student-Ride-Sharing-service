@@ -1,5 +1,5 @@
 {% extends 'header.html' %}
-{% block title %} Requested Rides | {% endblock title %}
+{% block title %} History of Ride Hosting | {% endblock title %}
 {% block content %}
 
 {% if user.is_authenticated %}
@@ -58,9 +58,19 @@
         display: block;
         margin-bottom: 5px;
     }
+
+    .btn-custom {
+        background: linear-gradient(to bottom, #ffffff, #f7f7f7);
+        color: #333;
+        border: 2px solid #f7f7f7;
+        border-radius: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
 </style>
 <div class="container">
-    <h1>Requested Rides</h1>
+    <h1>Ride Host History</h1>
     <label for="ride-type-select">Filter by Ride Type:</label>
     <select id="ride-type-select" class="btn btn-primary dropdown-toggle">
         <option value="all">All</option>
@@ -68,16 +78,15 @@
         <option value="car">Car</option>
     </select>
     <ul id="ride-list">
-        {% for ride in requested_rides %}
-        <a href="{% url 'ride_details' ride.id %}">
+        {% for ride in rides_hosted %}
             <li class="ride-item box" data-ride-type="{{ ride.ride_type }}">
                 <span class="location"><strong> {{ ride.start_loc }}</strong> to <strong>{{ ride.destination }}</strong></span>
                 <span class="ride-capacity">Riders: <strong>{{ ride.ride_capacity }}</strong> || Ride Type: <strong>{{ ride.ride_type }}</strong></span>
                 <br>
                 <span class="ride-time-since">{{ ride.time_since_creation }}</span>
-                <br>
+                <br><div class="text-center">
+                <a class="btn btn-primary btn-custom" href="{% url 'ride_details' ride.id %}">See Details</a>
             </li>
-        </a>
         {% endfor %}
     </ul>
 </div>
@@ -106,7 +115,11 @@
 
 
 {% else %}
-<h1>You must <a href="{% url 'home' %}"> Login </a> or <a href="{% url 'register' %}"> Register First </a></h1>
+<div class="container">
+    <h1>IDENTITY THEFT IS NO JOKE, JIM.<br/>
+        THOUSANDS OF FAMILIES SUFFER EVERY YEAR.
+    </h1>
+    </div>
 {% endif %}
 
 {% endblock %}

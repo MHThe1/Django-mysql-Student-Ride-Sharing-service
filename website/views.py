@@ -13,7 +13,13 @@ from django.http import HttpResponseRedirect, JsonResponse
 from geopy.geocoders import Nominatim
 from geopy.distance import geodesic
 
+from django.contrib.auth.decorators import login_required
+from django.contrib.sites.shortcuts import get_current_site
+
 def home(request):
+    return render(request, 'home.html', {})
+
+def login_user(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -21,12 +27,49 @@ def home(request):
         if user is not None:
             login(request, user)
             messages.success(request, "Login Successful")
+            return redirect('/')
         else:
             messages.success(request, "There was an Error, try loging in again!")
-            return redirect('home')
-    return render(request, 'home.html', {})
+            return redirect('login')
+    return render(request, 'login.html', {})
+
+@login_required
+def dashboard(request):
+    current_user = request.user
+    
+    user_rides_as_rider = Ride.objects.filter(rider=current_user)
+    total_rider_rating = 0
+    num_rides_as_rider = user_rides_as_rider.count()
+    for ride in user_rides_as_rider:
+        total_rider_rating += ride.rider_review
+    if num_rides_as_rider > 0:
+        average_rider_rating = total_rider_rating / num_rides_as_rider
+    else:
+        average_rider_rating = 0
+
+    user_rides_as_host = Ride.objects.filter(rider=current_user)
+    total_host_rating = 0
+    num_rides_as_host = user_rides_as_host.count()
+    for ride in user_rides_as_host:
+        total_host_rating += ride.host_review
+    if num_rides_as_host > 0:
+        average_host_rating = total_host_rating / num_rides_as_host
+    else:
+        average_host_rating = 0
+
+    context = {
+        'num_rides_as_rider' : num_rides_as_rider,
+        'average_rider_rating' : average_rider_rating,
+        'num_rides_as_host' : num_rides_as_host,
+        'average_host_rating' : average_host_rating,
+    }    
+
+    return render(request, 'dashboard.html', context)
 
 
+
+
+@login_required
 def logout_user(request):
     logout(request)
     messages.success(request, "Logged out Succesfully!")
@@ -43,7 +86,7 @@ def register_user(request):
         fullname = request.POST.get('fullname')
       
         try:
-            if not (email.endswith("@g.bracu.ac.bd") or email.endswith("@bracu.ac.bd")):
+            if not (email.endswith("@g.bracu.ac.bd") or email.endswith("@bracu.ac.bd") or email.endswith("@gmail.com")):
                 messages.success(request, 'Must be a BRACU G-suite email address!')
                 return redirect('/register')
             if User.objects.filter(username=username).first():
@@ -58,11 +101,7 @@ def register_user(request):
             user_obj.set_password(password)
             user_obj.save()
             auth_token = str(uuid.uuid4())
-            profile_obj = Profile.objects.create(user = user_obj,
-                                                 auth_token = auth_token,
-                                                 fullname=fullname,
-                                                 student_id=student_id,
-                                                 phone_number=phone_number)
+            profile_obj = Profile.objects.create(user = user_obj, auth_token = auth_token, fullname=fullname, student_id=student_id, phone_number=phone_number)
             profile_obj.save()
             send_mail_after_registration(email, auth_token)
             return redirect('/token')
@@ -100,7 +139,8 @@ def error_page(request):
 
 def send_mail_after_registration(email, token):
     subject = "Your account needs to be verified"
-    message = f'Hi, follow this link to verify your STuber account http://127.0.0.1:8000/verify/{token}'
+    url = f"http://192.168.0.104:8000"
+    message = f'Hi, follow this link to verify your STuber account {url}/{token}'
     email_from = settings.EMAIL_HOST_USER
     recipient_list = [email]
     send_mail(subject, message, email_from, recipient_list)
@@ -114,16 +154,16 @@ def send_mail_to_approve_vehicle(subject):
 
 def vehicle_registration(request):
     if request.method == 'POST':
-        current_user_profile = request.user.profile
+        current_user = request.user
         form = VehicleForm(request.POST, request.FILES)
         
         if form.is_valid():
             new_vehicle = form.save(commit=False)
-            new_vehicle.host = current_user_profile
+            new_vehicle.host = current_user
             new_vehicle.save()
 
-            subject = "A new vehicle awaiting approval"
-            send_mail_to_approve_vehicle(subject)
+            user_name = current_user.profile.fullname
+            send_mail_to_approve_vehicle(user_name)
             messages.success(request, "Vehicle registered successfully! Wait for Approval")
             return redirect('/')
         else:
@@ -136,9 +176,10 @@ def vehicle_registration(request):
 
 
 
-def send_mail_to_approve_dl(subject):
-    subject = subject
-    message = f'An user has registered a DL with DL paper, please take a look and verify from admin panel. Link to admin panel: http://127.0.0.1:8000/admin'
+def send_mail_to_approve_dl(subject, name):
+    subject = "A new vehicle awaiting approval"
+    url = f"http://192.168.0.104:8000/admin"
+    message = f'{name} has registered a DL with DL paper, please take a look and verify from admin panel. Link to admin panel: {url}'
     email_from = settings.EMAIL_HOST_USER
     recipient_list = ['mehedihtanvir@gmail.com']
     send_mail(subject, message, email_from, recipient_list)
@@ -329,7 +370,7 @@ def ride_monitor(request, ride_id):
 
 def send_mail_ride_booked(email, rider, rider_phone, ride_url):
     subject = f"{rider} has booked your scheduled ride"
-    message = f'{rider} has booked your scheduled ride, to contact here is his/her/their phone number: {rider_phone}\nView Ride: {ride_url}'
+    message = f'{rider} has booked your scheduled ride, to contact here is his/her/their phone number: {rider_phone}\n\nView Ride: {ride_url}'
     email_from = settings.EMAIL_HOST_USER
     recipient_list = [email]
     send_mail(subject, message, email_from, recipient_list)
@@ -362,7 +403,8 @@ def ride_details(request, ride_id):
         rider_email = ride.rider.email
         host_name = ride.hosted_by.profile.fullname
         host_phone_number = ride.hosted_by.profile.phone_number
-        send_mail_ride_accepted(rider_email, host_name, host_phone_number)
+        ride_url = request.build_absolute_uri(reverse('ride_monitor', kwargs={'ride_id': ride_id}))
+        send_mail_ride_accepted(rider_email, host_name, host_phone_number, ride_url)
 
         return redirect('ride_details', ride_id=ride_id)
     
@@ -387,9 +429,9 @@ def delete_ride(request, ride_id):
         elif ride.ride == request.user:
             return HttpResponseRedirect(reverse('ride_monitor', kwargs={'ride_id': ride_id}))
 
-def send_mail_ride_accepted(email, host, host_phone):
+def send_mail_ride_accepted(email, host, host_phone, ride_url):
     subject = f"{host} has accepted your ride request"
-    message = f'{host} has accepted your ride request, to contact here is his/her/their phone number: {host_phone}'
+    message = f'{host} has accepted your ride request, to contact here is his/her/their phone number: {host_phone}\n\nView Ride: {ride_url}'
     email_from = settings.EMAIL_HOST_USER
     recipient_list = [email]
     send_mail(subject, message, email_from, recipient_list)
@@ -516,3 +558,39 @@ def scheduled_rides(request):
 
 
 
+def rides_taken(request):
+    current_user = request.user
+    rides_taken = Ride.objects.filter(rider=current_user).order_by('-updated_at')
+
+    ride_type = request.GET.get('ride_type')
+
+    if ride_type:
+        if ride_type == 'both':
+            pass
+        else:
+            rides_taken = rides_taken.filter(ride_type=ride_type)
+
+    return render(request, 'rides_taken.html', {'rides_taken': rides_taken})
+
+
+def rides_hosted(request):
+    current_user = request.user
+    rides_hosted = Ride.objects.filter(hosted_by=current_user).order_by('-updated_at')
+
+    ride_type = request.GET.get('ride_type')
+
+    if ride_type:
+        if ride_type == 'both':
+            pass
+        else:
+            rides_hosted = rides_hosted.filter(ride_type=ride_type)
+
+    return render(request, 'rides_hosted.html', {'rides_hosted': rides_hosted})
+
+
+def rides_ongoing(request):
+    current_user = request.user
+    rides_ongoing = Ride.objects.filter(rider=current_user) | Ride.objects.filter(hosted_by=current_user)
+    rides_ongoing = Ride.objects.exclude(ride_status='ended').order_by('-updated_at')
+
+    return render(request, 'rides_ongoing.html', {'rides_ongoing': rides_ongoing})

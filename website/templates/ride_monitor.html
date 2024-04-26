@@ -1,5 +1,5 @@
 {% extends 'header.html' %}
-
+{% block title %} Ride Monitor | {% endblock title %}
 {% block content %}
 
 {% if user.is_authenticated %}
@@ -116,9 +116,11 @@
 
 
 {% else %}
+<div class="container">
 <h1>IDENTITY THEFT IS NO JOKE, JIM.<br/>
     THOUSANDS OF FAMILIES SUFFER EVERY YEAR.
 </h1>
+</div>
 {% endif %}
 
 {% endblock %}

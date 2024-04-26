@@ -3,9 +3,10 @@ from . import views
 
 urlpatterns = [
     path('', views.home, name='home'),
-    # path('login/', views.login_user, name='login'),
+    path('login/', views.login_user, name='login'),
     path('logout/', views.logout_user, name='logout'),
     path('register/', views.register_user, name='register'),
+    path('dashboard/', views.dashboard, name='dashboard'),
     path('token/', views.token_sent, name='token'),
     path('success/', views.success, name='success'),
     path('verify/<auth_token>', views.verify, name='verify'),
@@ -27,5 +28,8 @@ urlpatterns = [
     path('schedule_to_bracu/', views.schtobracu, name='schedule_to_bracu'),
     path('scheduled_rides/', views.scheduled_rides, name='scheduled_rides'),
     path('ride/<int:ride_id>/delete/', views.delete_ride, name='delete_ride'),
+    path('rides_taken/', views.rides_taken, name='rides_taken'),
+    path('rides_hosted/', views.rides_hosted, name='rides_hosted'),
+    path('rides_ongoing/', views.rides_ongoing, name='rides_ongoing'),
 
 ]

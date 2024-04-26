@@ -1,0 +1,121 @@
+{% extends 'header.html' %}
+{% block title %} Dashboard | {% endblock title %}
+{% block content %}
+
+{% if user.is_authenticated %}
+<style>
+    .profile-header {
+        background-color: #ffffff;
+        padding: 20px 0;
+        text-align: center;
+        border-bottom: 1px solid #eaeaea;
+        margin-bottom: 20px;
+    }
+
+    .profile-picture {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 auto;
+        display: block;
+    }
+
+    .profile-name {
+        margin: 10px 0;
+        font-size: 24px;
+    }
+
+    .profile-info {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 5px;
+    }
+
+    .profile-info p {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    .profile-info .title {
+        color: #555;
+        font-weight: bold;
+    }
+
+    .logo-field {
+        display: flex;
+        align-items: center;
+    }
+
+    .logo {
+        width: 30px;
+        height: 30px;
+        margin-right: 10px;
+    }
+
+    .footer {
+        background-color: #ffffff;
+        color: #555;
+        text-align: center;
+        padding: 10px 0;
+        border-top: 1px solid #eaeaea;
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+    }
+
+    .btn-custom {
+        background: linear-gradient(to bottom, #ffffff, #f7f7f7);
+        color: #333;
+        border: 2px solid #f7f7f7;
+        border-radius: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-info p {
+        font-size: 16px;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eaeaea;
+    }
+
+    .profile-info p:last-child {
+        border-bottom: none;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="profile-header">
+        <img src="{{ user.profile.profile_pic.url }}" alt="DP" class="profile-picture">
+        <h3 class="profile-name">{{ user.profile.fullname}}</h3>
+        <p>@{{ user.username }}</p>
+        <p>{{ user.email }}</p>
+    </div>
+
+    <div class="profile-info">
+        <p><span class="title">Student ID:</span> {{ user.profile.student_id }}</p>
+        <p><span class="title">Contact Number:</span> {{ user.profile.phone_number }}</p>
+        <p><span class="title">Address:</span> {{ user.profile.address }}</p>
+        <p><span class="title">Rider Rating:</span> {{ average_rider_rating }}</p>
+        <p><span class="title">Rides Taken:</span> {{ num_rides_as_rider }}</p>
+        {% if user.profile.is_host == True %}
+        <p><span class="title">Host Rating:</span> {{ average_host_rating }}</p>
+        <p><span class="title">Rides Hosted:</span> {{ num_rides_as_host }}</p>
+        {% endif %}
+    </div>
+</div>
+<div class="text-center">
+    <a href="{% url 'rides_taken' %}" class="btn btn-primary btn-custom">Rides Taken</a>
+    <a href="{% url 'rides_ongoing' %}" class="btn btn-secondary btn-custom">Rides Ongoing</a>
+</div>
+</div>
+</div>
+
+
+{% else %}
+<h1>Please Verify your account to continue</h1>
+{% endif %}
+
+{% endblock %}

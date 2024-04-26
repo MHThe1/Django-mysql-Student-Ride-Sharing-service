@@ -1,4 +1,3 @@
-
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -12,7 +11,7 @@ class Profile(models.Model):
     fullname = models.CharField(max_length=100, default='None')
     student_id = models.CharField(max_length=8, default='None')
     phone_number = models.CharField(max_length=11, default='None')
-    rating = models.FloatField(default=5)
+    address = models.CharField(null=True, blank=True, max_length=300)
     profile_pic = models.ImageField(null=True, blank=True, upload_to='profile_pics', default='default.png')
 
     is_host = models.BooleanField(default=False)
@@ -109,6 +108,3 @@ class Ride(models.Model):
             return f"{int(minutes)} minutes"
         return f"{int(hours)} hour(s), {int(minutes)} minutes"
     
-    def delete_if_times_up(self):
-        if self.ride_status == 'scheduled' and timezone.now() > self.start_time:
-            self.delete()

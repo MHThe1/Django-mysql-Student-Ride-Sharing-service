@@ -1,5 +1,5 @@
 {% extends 'header.html' %}
-
+{% block title %} Registration | {% endblock title %}
 {% block content %}
 
 <div class="col-md-6 offset-md-3">
@@ -9,6 +9,7 @@
   <h1>Welcome to STuber, A ride sharing service for BRACU Students</h1>
 
   {% else %}
+  <div class="container">
   <h1>Register</h1>
   <form method="POST">
     {% csrf_token %}
@@ -32,6 +33,7 @@
     </div>
     <button type="submit" class="btn btn-primary">Register</button>
   </form>
+  </div>
   {% endif %}
 </div>
 {%endblock%}

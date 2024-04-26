@@ -1,26 +1,170 @@
 {% extends 'header.html' %}
 
 {% block content %}
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    background-color: #e9ecef;
+  }
 
-<div class="col-md-6 offset-md-3">
+  .jumbotron {
+    background-color: #f8f9fa;
+  }
+
+  .jumbotron h1 {
+    font-weight: bold;
+  }
+
+  .jumbotron p {
+    font-size: 1.2rem;
+  }
+
+
+  .exclusive-services {
+    padding: 40px 0;
+    background-color: white;
+    margin-top: -20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .exclusive-services h2 {
+    color: #007bff;
+    margin-bottom: 20px;
+  }
+
+  .exclusive-services p {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+  }
+
+  .footer {
+    background-color: #f8f9fa;
+    text-align: center;
+    padding: 10px 0;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+  }
+
+  .contact-info {
+    padding: 40px 0;
+  }
+
+  .contact-info h3 {
+    margin-bottom: 15px;
+  }
+
+  .container.exclusive-services {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    margin-top: -30px;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .container.exclusive-services::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    bottom: -50px;
+    left: -50px;
+    background: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* Slight shadow */
+    z-index: -1;
+  }
+
+  .container.exclusive-services h2 {
+    font-size: 2rem;
+    color: black;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .container.exclusive-services p {
+    font-size: 1rem;
+    color: black;
+    font-family: 'Arial', sans-serif;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .container.exclusive-services {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    margin-top: -30px;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .btn-group .btn {
+    margin: 10px;
+    border-radius: 10px;
+  }
+
+  .btn-outline-light {
+    border-color: #007bff;
+    color: black;
+  }
+
+  .btn-outline-light:hover {
+    background-color: #f8f9fa;
+    color: #007bff;
+  }
+
+  .btn-outline-primary {
+    border-color: #007bff;
+    color: black;
+  }
+
+  .btn-outline-primary:hover {
+    background-color: #007bff;
+    color: #fff;
+  }
+
+  .btn-outline-success {
+    border-color: #007bff;
+    color: black;
+  }
+
+  .btn-outline-success:hover {
+    background-color: #28a745;
+    color: #fff;
+  }
+</style>
 
 {% if user.is_authenticated %}
 
 <h1>Welcome to STuber, A ride sharing service for BRACU Students</h1>
 
 {% else %}
-<h1>Log In</h1>
-<form method="POST" action="{% url 'home' %}">
-    {% csrf_token %}
-        <div class="mb-3">
-          <input type="text" class="form-control" name="username" placeholder="Username" required>
-        </div>
-
-        <div class="mb-3">
-          <input type="password" class="form-control" name="password" placeholder="Password" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Login</button>
-</form>
-{% endif %}
+<div class="jumbotron text-center">
+  <h1>Welcome to stuber</h1>
+  <div class="container-fluid">Connecting students and faculty with safe and reliable rides.</div>
 </div>
+
+<div class="container exclusive-services text-center">
+  <h2>Are you a BRACU student or faculty?</h2>
+  <p>If yes, you can access our exclusive services tailored just for you.</p>
+  <p>We not only offer rides to students but also you can join us as a host and provide service to your peers.</p>
+  <div class="btn-group" role="group" aria-label="Basic example">
+    <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg">Log In</a>
+    <a href="{% url 'register' %}" class="btn btn-outline-primary btn-lg">Register</a>
+    <a href="register-host.html" class="btn btn-outline-success btn-lg">Become as a Host</a>
+  </div>
+</div>
+
+{% endif %}
 {%endblock%}
