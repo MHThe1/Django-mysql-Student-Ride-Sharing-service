@@ -17,6 +17,11 @@ from geopy.distance import geodesic
 from django.contrib.auth.decorators import login_required
 from django.contrib.sites.shortcuts import get_current_site
 
+from decouple import config
+
+from django.contrib.auth.decorators import user_passes_test
+
+
 def home(request):    
     return render(request, 'home.html', {})
 
@@ -33,6 +38,12 @@ def login_user(request):
             messages.success(request, "There was an Error, try loging in again!")
             return redirect('login')
     return render(request, 'login.html', {})
+
+
+
+def is_staff_or_superuser(user):
+    return user.is_authenticated and (user.is_staff or user.is_superuser)
+
 
 @login_required
 def dashboard(request):
@@ -207,15 +218,16 @@ def error_page(request):
 
 def send_mail_after_registration(email, token):
     subject = "Your account needs to be verified"
-    url = f"http://192.168.0.104:8000"
-    message = f'Hi, follow this link to verify your STuber account {url}/{token}'
+    site_domain = config('SITE_DOMAIN')
+    message = f'Hi, follow this link to verify your STuber account {site_domain}/{token}'
     email_from = settings.EMAIL_HOST_USER
     recipient_list = [email]
     send_mail(subject, message, email_from, recipient_list)
 
-def send_mail_to_approve_vehicle(subject):
-    subject = subject
-    message = f'An user has registered a vehicle with this registration paper, please take a look and verify from admin panel. Link to admin panel: http://127.0.0.1:8000/admin'
+def send_mail_to_approve_vehicle(user_name, v_model):
+    subject = "New vehicle needs approval"
+    site_domain = config('SITE_DOMAIN')
+    message = f'An {user_name} has registered a new vehicle, {v_model}. Please take a look and verify from admin panel. Link to admin panel: {site_domain}/admin'
     email_from = settings.EMAIL_HOST_USER
     recipient_list = ['mehedihtanvir@gmail.com']
     send_mail(subject, message, email_from, recipient_list)
@@ -232,8 +244,9 @@ def vehicle_registration(request):
             new_vehicle.host = current_user
             new_vehicle.save()
 
+            v_model = new_vehicle.vehicle_model
             user_name = current_user.profile.fullname
-            send_mail_to_approve_vehicle(user_name)
+            send_mail_to_approve_vehicle(user_name, v_model)
             messages.success(request, "Vehicle registered successfully! Wait for Approval")
             return redirect('/')
         else:
@@ -247,9 +260,8 @@ def vehicle_registration(request):
 
 
 def send_mail_to_approve_dl(subject, name):
-    subject = "A new vehicle awaiting approval"
-    url = f"http://192.168.0.104:8000/admin"
-    message = f'{name} has registered a DL with DL paper, please take a look and verify from admin panel. Link to admin panel: {url}'
+    site_domain = config('SITE_DOMAIN')
+    message = f'{name} has registered a DL with DL paper, please take a look and verify from admin panel. Link to admin panel: {site_domain}/admin'
     email_from = settings.EMAIL_HOST_USER
     recipient_list = ['mehedihtanvir@gmail.com']
     send_mail(subject, message, email_from, recipient_list)
@@ -282,8 +294,72 @@ def dl_registration(request):
 
 
 def become_host(request):
-    return render(request, 'become_host.html')
+    dls = Driver.objects.filter(host=request.user)
+    vehicles = Vehicle.objects.filter(host=request.user)
 
+    a_dl_count = Driver.objects.filter(host=request.user, dl_approved=True).count()
+    a_v_count = Vehicle.objects.filter(host=request.user, v_is_verified=True).count()
+    
+    show_apply_button = a_v_count > 0 and a_dl_count > 0
+    
+    if show_apply_button:
+        if request.method == 'POST':
+            user_name = request.user.profile.fullname
+            subject = f"{user_name} has requested to become host!"
+            send_mail_to_become_host(subject, user_name)
+            messages.success(request, "Request to become a Host sent! Wait for Approval")
+            return redirect('/')
+    else:
+        messages.error(request, "You must register both a driver's license and a vehicle before applying to become a host.")
+    
+    context =  {'dls': dls,
+                'vehicles': vehicles,
+                'a_dl_count': a_dl_count,
+                'a_v_count': a_v_count,
+                'show_apply_button': show_apply_button,
+                }
+
+    return render(request, 'become_host.html', context)
+
+
+def send_mail_to_become_host(subject, name):
+    site_domain = config('SITE_DOMAIN')
+    message = f'{name} has requested to become a host, please take a look and verify from admin panel. Link to admin panel: {site_domain}/admin'
+    email_from = settings.EMAIL_HOST_USER
+    recipient_list = ['mehedihtanvir@gmail.com']
+    send_mail(subject, message, email_from, recipient_list)
+
+
+
+@user_passes_test(is_staff_or_superuser)
+def inspect_host_status(request, username):
+    user = get_object_or_404(User, username=username)
+    profile = get_object_or_404(Profile, user=user)
+
+    dls = Driver.objects.filter(host=user)
+    vehicles = Vehicle.objects.filter(host=user)
+    
+    context =  {'dls': dls,
+                'vehicles': vehicles,
+                'profile': profile,
+                'user': user,
+                }
+
+    return render(request, 'inspect_host_status.html', context)
+
+def approve_bike_host(request, username):
+    user = get_object_or_404(User, username=username)
+    profile = get_object_or_404(Profile, user=user)
+    profile.is_bike_host = True
+    profile.save()
+    return redirect('inspect_host_status', username=username)
+
+def approve_car_host(request, username):
+    user = get_object_or_404(User, username=username)
+    profile = get_object_or_404(Profile, user=user)
+    profile.is_car_host = True
+    profile.save()
+    return redirect('inspect_host_status', username=username)
 
 
 def cost_estimate(request):

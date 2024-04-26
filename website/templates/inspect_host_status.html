@@ -1,0 +1,102 @@
+{% extends 'header.html' %}
+{% block title %} Inspect Host Status | {% endblock title %}
+{% block content %}
+
+<style>
+    .form-section {
+        border: 2px solid #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        background-color: #f8f9fa;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    }
+
+    .approval-status {
+        font-weight: bold;
+    }
+
+    .approved {
+        color: green;
+    }
+
+    .not-approved {
+        color: red;
+    }
+    .dl-paper img,
+    .registration-paper img {
+        max-width: 100%;
+        max-height: 200px;
+    }
+</style>
+<div class="container mt-5">
+    <h1 align="center">Inspect Host Status</h1>
+    <br>
+    <h2>User: {{ user.username }}</h2>
+    <br>
+    <div class="row">
+        <div class="col-md-6 form-section" id="driverLicenseSection">
+            <h3>Driver's License</h3>
+            <ul class="approval-status" id="driver-license-list">
+                {% for dl in dls %}
+                <li class="driver-item box">
+                    <span class="dl-reg"><strong>{{ dl.dl_reg }}</strong></span>
+                    <span class="dl-type">Vehicle class: <strong>{{ dl.dl_type }}</strong></span>
+                    <br>
+                    <span class="dl-approved">Status: <strong class="{% if dl.dl_approved %}approved{% else %}not-approved{% endif %}">
+                        {% if dl.dl_approved %}Approved{% else %}Waiting for Approval{% endif %}
+                    </strong></span>
+                    <br>
+                    {% if dl.dl_paper %}
+                    <div class="dl-paper">
+                        <img src="{{ dl.dl_paper.url }}" alt="Driver's License Paper">
+                    </div>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-md-6 form-section" id="vehicleRegistrationSection">
+            <h3>Vehicle Registration</h3>
+            <ul class="approval-status" id="vehicle-registration-list">
+                {% for v in vehicles %}
+                <li class="vehicle-item box">
+                    <span class="vehicle-reg"><strong>{{ v.vehicle_reg }}</strong></span>                    
+                    <span class="vehicle-model">Vehicle: <strong>{{ v.vehicle_model }}</strong></span>
+                    <span class="vehicle-type">Vehicle class: <strong>{{ v.vehicle_type }}</strong></span>
+                    <br>
+                    <span class="vehicle-status">Status: <strong class="{% if v.v_is_verified %}approved{% else %}not-approved{% endif %}">
+                        {% if v.v_is_verified %}Verified{% else %}Waiting for Verification{% endif %}
+                    </strong></span>
+                    <br>
+                    {% if v.registration_paper %}
+                    <div class="registration-paper">
+                        <img src="{{ v.registration_paper.url }}" alt="Vehicle Registration Paper">
+                    </div>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        {% if not profile.is_bike_host %}
+        <div class="col-md-6">
+            <form action="{% url 'approve_bike_host' username=profile.user.username %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">Approve as Bike Host</button>
+            </form>
+        </div>
+        {% endif %}
+        {% if not profile.is_car_host %}
+        <div class="col-md-6">
+            <form action="{% url 'approve_car_host' username=profile.user.username %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">Approve as Car Host</button>
+            </form>
+        </div>
+        {%endif%}
+    </div>
+</div>
+
+{% endblock %}

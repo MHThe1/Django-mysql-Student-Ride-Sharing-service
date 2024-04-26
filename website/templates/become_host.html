@@ -11,12 +11,15 @@
         background-color: #f8f9fa;
         box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
     }
+
     .approval-status {
         font-weight: bold;
     }
+
     .approved {
         color: green;
     }
+
     .not-approved {
         color: red;
     }
@@ -27,52 +30,56 @@
     <div class="row">
         <div class="col-md-6 form-section" id="driverLicenseSection">
             <h3>Driver's License</h3>
-            <p>Have you registered as a driver?</p>
-            <!-- Replace the checkbox with an approval status -->
-            <p class="approval-status">
-                Status: <span id="driverStatus" class="not-approved">Not Approved</span>
-            </p>
-            <a href="driver_registration.html">Register as a driver</a>
+            <ul class="approval-status" id="ride-list">
+                {% for dl in dls %}
+                <li class="ride-item box">
+                    <span class="location"><strong> {{ dl.dl_reg }}</strong></span>
+                    <span class="ride-time-since">Vehicle class: <strong>{{ dl.dl_type }}</strong></span>
+                    <br>
+                    <span class="ride-capacity">Status: <strong>
+                        {% if dl.dl_approved %}
+                        Approved
+                        {%else%}
+                        Waiting for Approval
+                        {% endif %}
+                    </strong></span>
+                    <br>
+                </li>
+                {% endfor %}
+            </ul>
+            <a href="{% url 'dl_registration' %}">Submit Driving License</a>
         </div>
         <div class="col-md-6 form-section" id="vehicleRegistrationSection">
             <h3>Vehicle Registration</h3>
-            <p>Have you registered your vehicle?</p>
-            <!-- Replace the checkbox with an approval status -->
-            <p class="approval-status">
-                Status: <span id="vehicleStatus" class="not-approved">Not Approved</span>
-            </p>
-            <a href="vehicle_registration.html">Register your vehicle</a>
+            <ul class="approval-status" id="ride-list">
+                {% for v in vehicles %}
+                <li class="ride-item box">
+                    <span class="location"><strong> {{ v.vehicle_reg }}</strong></span>                    
+                    <span class="ride-time-since">Vehicle: <strong>{{ v.vehicle_model }}</strong></span>
+                    <span class="ride-time-since">Vehicle class: <strong>{{ v.vehicle_type }}</strong></span>
+                    <br>
+                    <span class="ride-capacity">Status: <strong>
+                        {% if v.v_is_verified %}
+                        Verified
+                        {%else%}
+                        Waiting for Verification
+                        {% endif %}
+                    </strong></span>
+                    <br>
+                </li>
+                {% endfor %}
+            </ul>
+            <a href="{% url 'vehicle_registration' %}">Register your vehicle</a>
         </div>
     </div>
     <br>
-    <button class="btn btn-primary" onclick="apply()">Apply</button>
+    {% if show_apply_button %}
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Apply to Become a Host</button>
+    </form>
+    {% endif %}
 </div>
-
-<script>
-    function apply() {
-        const driverStatus = document.getElementById("driverStatus");
-        const vehicleStatus = document.getElementById("vehicleStatus");
-        
-        // Simulate backend approval (you can replace this with actual backend logic)
-        const isDriverApproved = true; // Set to true if approved, false if not
-        const isVehicleApproved = true; // Set to true if approved, false if not
-        
-        if (isDriverApproved && isVehicleApproved) {
-            driverStatus.textContent = "Approved";
-            driverStatus.classList.add("approved");
-            vehicleStatus.textContent = "Approved";
-            vehicleStatus.classList.add("approved");
-            // Redirect to the application submission page
-            window.location.href = "application_submission.html";
-        } else {
-            driverStatus.textContent = "Not Approved";
-            driverStatus.classList.add("not-approved");
-            vehicleStatus.textContent = "Not Approved";
-            vehicleStatus.classList.add("not-approved");
-            alert("Please ensure both driver and vehicle registration are approved.");
-        }
-    }
-</script>
 
 {% else %}
 <h1>Please Register or Login First</h1>

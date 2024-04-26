@@ -5,32 +5,66 @@
 <div class="col-md-6 offset-md-3">
 
   {% if user.is_authenticated %}
-  <h1>Register Vehicle</h1>
-  <form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    <div class="mb-3">
-      <input type="text" class="form-control" name="vehicle_type" placeholder="Vehicle Type" required>
-    </div>
-    <div class="mb-3">
-      <input type="text" class="form-control" name="vehicle_model" placeholder="Vehicle Model" required>
-    </div>
-    <div class="mb-3">
-      <input type="text" class="form-control" name="vehicle_capacity" placeholder="Vehicle Capacity" required>
-    </div>
-    <div class="mb-3">
-      <input type="text" class="form-control" name="vehicle_reg" placeholder="Vehicle Registration" required>
-    </div>
-    <div class="mb-3">
-      <label for="formFile" class="form-label">Registration Paper</label>
-      <input class="form-control" type="file" name="registration_paper">
-    </div>
-    <div class="mb-3">
-      <input type="text" class="form-control" name="vehicle_color" placeholder="Vehicle Color" required>
-    </div>
-    <button type="submit" class="btn btn-primary">Register</button>
-  </form>
+  <div class="container">
+    <h1>Register Vehicle</h1>
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="vehicleTypeSelect">Vehicle Type:</label>
+            <select id="vehicleTypeSelect" class="form-control" name="vehicle_type" onchange="updateCapacityOptions()">
+                <option value="car">Car</option>
+                <option value="bike">Bike</option>
+            </select>
+      </div>
+      <div class="mb-3">
+        <input type="text" class="form-control" name="vehicle_model" placeholder="Vehicle Model" required>
+      </div>
+      <div class="mb-3">
+        <label for="capacitySelect">Vehicle Capacity:</label>
+            <select id="capacitySelect" name="vehicle_capacity" class="form-control">
+            </select>
+      </div>
+      <div class="mb-3">
+        <input type="text" class="form-control" name="vehicle_reg" placeholder="Vehicle Registration" required>
+      </div>
+      <div class="mb-3">
+        <label for="formFile" class="form-label">Registration Paper</label>
+        <input class="form-control" type="file" name="registration_paper">
+      </div>
+      <div class="mb-3">
+        <input type="text" class="form-control" name="vehicle_color" placeholder="Vehicle Color" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Register</button>
+    </form>
+  </div>
   {% else %}
   <h1>Please Register or Login First</h1>
   {% endif %}
 </div>
+<script>
+  function updateCapacityOptions() {
+      var vehicleType = document.getElementById('vehicleTypeSelect').value;
+      var capacitySelect = document.getElementById('capacitySelect');
+
+      while (capacitySelect.firstChild) {
+          capacitySelect.removeChild(capacitySelect.firstChild);
+      }
+
+      if (vehicleType === 'bike') {
+          var option = document.createElement('option');
+          option.value = 1;
+          option.text = '1';
+          capacitySelect.appendChild(option);
+      } else {
+          for (var i = 1; i <= 7; i++) {
+              var option = document.createElement('option');
+              option.value = i;
+              option.text = i;
+              capacitySelect.appendChild(option);
+          }
+      }
+  }
+  document.addEventListener('DOMContentLoaded', updateCapacityOptions);
+
+</script>
 {%endblock%}
