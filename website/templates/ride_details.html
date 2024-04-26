@@ -69,6 +69,12 @@
 
 <div class="container" align="center">
     <h1>Ride Details</h1>
+    {% if ride.hosted_by %}
+    <span class="location">Host: <strong> <a href="/profile/{{ ride.hosted_by.username }}">{{ ride.hosted_by.profile.fullname }}</a></strong></span>
+    {% endif %}
+    {% if ride.rider %}
+    <span class="location">Rider: <strong> <a href="/profile/{{ ride.rider.username }}">{{ ride.rider.profile.fullname }}</a></strong></span>
+    {% endif %}
     <span class="location">From: <strong> {{ ride.start_loc }}</strong></span>
     <span class="location">To: <strong>{{ ride.destination }}</strong></span>
     <span class="location">Incentive: <strong>{{ ride.riderpays }} TK</strong></span>

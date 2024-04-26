@@ -1,0 +1,81 @@
+{% extends 'header.html' %}
+{% block title %} Become a Host | {% endblock title %}
+{% block content %}
+
+{% if user.is_authenticated %}
+<style>
+    .form-section {
+        border: 2px solid #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        background-color: #f8f9fa;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    }
+    .approval-status {
+        font-weight: bold;
+    }
+    .approved {
+        color: green;
+    }
+    .not-approved {
+        color: red;
+    }
+</style>
+<div class="container mt-5">
+    <h1 align="center">Ride-Sharing Host Application</h1>
+    <br>
+    <div class="row">
+        <div class="col-md-6 form-section" id="driverLicenseSection">
+            <h3>Driver's License</h3>
+            <p>Have you registered as a driver?</p>
+            <!-- Replace the checkbox with an approval status -->
+            <p class="approval-status">
+                Status: <span id="driverStatus" class="not-approved">Not Approved</span>
+            </p>
+            <a href="driver_registration.html">Register as a driver</a>
+        </div>
+        <div class="col-md-6 form-section" id="vehicleRegistrationSection">
+            <h3>Vehicle Registration</h3>
+            <p>Have you registered your vehicle?</p>
+            <!-- Replace the checkbox with an approval status -->
+            <p class="approval-status">
+                Status: <span id="vehicleStatus" class="not-approved">Not Approved</span>
+            </p>
+            <a href="vehicle_registration.html">Register your vehicle</a>
+        </div>
+    </div>
+    <br>
+    <button class="btn btn-primary" onclick="apply()">Apply</button>
+</div>
+
+<script>
+    function apply() {
+        const driverStatus = document.getElementById("driverStatus");
+        const vehicleStatus = document.getElementById("vehicleStatus");
+        
+        // Simulate backend approval (you can replace this with actual backend logic)
+        const isDriverApproved = true; // Set to true if approved, false if not
+        const isVehicleApproved = true; // Set to true if approved, false if not
+        
+        if (isDriverApproved && isVehicleApproved) {
+            driverStatus.textContent = "Approved";
+            driverStatus.classList.add("approved");
+            vehicleStatus.textContent = "Approved";
+            vehicleStatus.classList.add("approved");
+            // Redirect to the application submission page
+            window.location.href = "application_submission.html";
+        } else {
+            driverStatus.textContent = "Not Approved";
+            driverStatus.classList.add("not-approved");
+            vehicleStatus.textContent = "Not Approved";
+            vehicleStatus.classList.add("not-approved");
+            alert("Please ensure both driver and vehicle registration are approved.");
+        }
+    }
+</script>
+
+{% else %}
+<h1>Please Register or Login First</h1>
+{% endif %}
+
+{% endblock %}

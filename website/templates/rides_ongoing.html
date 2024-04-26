@@ -73,28 +73,29 @@
     <h1>Ride(s) ongoing</h1>
     <ul id="ride-list">
         {% for ride in rides_ongoing %}
-            <li class="ride-item box" data-ride-type="{{ ride.ride_type }}">
-                <span class="location"><strong> {{ ride.start_loc }}</strong> to <strong>{{ ride.destination }}</strong></span>
-                <span class="ride-capacity">Riders: <strong>{{ ride.ride_capacity }}</strong> || Ride Type: <strong>{{ ride.ride_type }}</strong></span>
-                <br>
-                <span class="ride-time-since">{{ ride.time_since_creation }}</span>
-                <br><div class="text-center">
+        <li class="ride-item box" data-ride-type="{{ ride.ride_type }}">
+            <span class="location"><strong> {{ ride.start_loc }}</strong> to <strong>{{ ride.destination}}</strong></span>
+            <span class="ride-capacity">Riders: <strong>{{ ride.ride_capacity }}</strong> || Ride Type: <strong>{{ ride.ride_type }}</strong></span>
+            <br>
+            <span class="ride-time-since">{{ ride.time_since_creation }}</span>
+            <br>
+            <div class="text-center">
                 {% if ride.rider == request.user %}
                 <a class="btn btn-primary btn-custom" href="{% url 'ride_monitor' ride.id %}">See Details</a>
                 {% else %}
                 <a class="btn btn-primary btn-custom" href="{% url 'ride_details' ride.id %}">See Details</a>
                 {% endif %}
-            </li>
+        </li>
         {% endfor %}
     </ul>
 </div>
 
 {% else %}
 <div class="container">
-    <h1>IDENTITY THEFT IS NO JOKE, JIM.<br/>
+    <h1>IDENTITY THEFT IS NO JOKE, JIM.<br />
         THOUSANDS OF FAMILIES SUFFER EVERY YEAR.
     </h1>
-    </div>
+</div>
 {% endif %}
 
 {% endblock %}

@@ -1,3 +1,4 @@
+from functools import wraps
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -16,7 +17,7 @@ from geopy.distance import geodesic
 from django.contrib.auth.decorators import login_required
 from django.contrib.sites.shortcuts import get_current_site
 
-def home(request):
+def home(request):    
     return render(request, 'home.html', {})
 
 def login_user(request):
@@ -35,6 +36,9 @@ def login_user(request):
 
 @login_required
 def dashboard(request):
+    if not request.user.profile.is_verified:
+        return redirect('verification_required')
+
     current_user = request.user
     
     user_rides_as_rider = Ride.objects.filter(rider=current_user)
@@ -47,7 +51,7 @@ def dashboard(request):
     else:
         average_rider_rating = 0
 
-    user_rides_as_host = Ride.objects.filter(rider=current_user)
+    user_rides_as_host = Ride.objects.filter(hosted_by=current_user)
     total_host_rating = 0
     num_rides_as_host = user_rides_as_host.count()
     for ride in user_rides_as_host:
@@ -66,6 +70,39 @@ def dashboard(request):
 
     return render(request, 'dashboard.html', context)
 
+@login_required
+def viewprofile(request, username):
+    person = get_object_or_404(User, username=username)
+    
+    user_rides_as_rider = Ride.objects.filter(rider=person)
+    total_rider_rating = 0
+    num_rides_as_rider = user_rides_as_rider.count()
+    for ride in user_rides_as_rider:
+        total_rider_rating += ride.rider_review
+    if num_rides_as_rider > 0:
+        average_rider_rating = total_rider_rating / num_rides_as_rider
+    else:
+        average_rider_rating = 0
+
+    user_rides_as_host = Ride.objects.filter(hosted_by=person)
+    total_host_rating = 0
+    num_rides_as_host = user_rides_as_host.count()
+    for ride in user_rides_as_host:
+        total_host_rating += ride.host_review
+    if num_rides_as_host > 0:
+        average_host_rating = total_host_rating / num_rides_as_host
+    else:
+        average_host_rating = 0
+
+    context = {
+        'person' : person,
+        'num_rides_as_rider' : num_rides_as_rider,
+        'average_rider_rating' : average_rider_rating,
+        'num_rides_as_host' : num_rides_as_host,
+        'average_host_rating' : average_host_rating,
+    }    
+
+    return render(request, 'view_profile.html', context)
 
 
 
@@ -111,6 +148,20 @@ def register_user(request):
 
     return render(request, 'register.html')
 
+
+@login_required
+def update_profile(request):
+    if request.method == 'POST':
+        form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated successfully.')
+            return redirect('dashboard')
+    else:
+        form = ProfileUpdateForm(instance=request.user.profile)
+    return render(request, 'update_profile.html', {'form': form})
+
+
 def success(request):
     return render(request, 'success.html')
 
@@ -133,6 +184,23 @@ def verify(request, auth_token):
     except Exception as e:
         print(e)
 
+
+def verification_required(request):
+    if request.user.profile.is_verified:
+            messages.success(request, "You are already verified!")
+            return redirect('/')
+    
+    return render(request, 'verification_required.html')
+
+def check_verification_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.profile.is_verified:
+            return redirect('verification_required')
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+
 def error_page(request):
     return render(request, 'error_page.html')
 
@@ -152,6 +220,8 @@ def send_mail_to_approve_vehicle(subject):
     recipient_list = ['mehedihtanvir@gmail.com']
     send_mail(subject, message, email_from, recipient_list)
 
+@login_required
+@check_verification_required
 def vehicle_registration(request):
     if request.method == 'POST':
         current_user = request.user
@@ -185,18 +255,21 @@ def send_mail_to_approve_dl(subject, name):
     send_mail(subject, message, email_from, recipient_list)
 
 
+@login_required
+@check_verification_required
 def dl_registration(request):
     if request.method == 'POST':
-        current_user_profile = request.user.profile
+        current_user = request.user
         form = DLForm(request.POST, request.FILES)
         
         if form.is_valid():
             new_dl = form.save(commit=False)
-            new_dl.host = current_user_profile
+            new_dl.host = current_user
             new_dl.save()
 
             subject = "A new DL needs approval"
-            send_mail_to_approve_dl(subject)
+            user_name = current_user.profile.fullname
+            send_mail_to_approve_dl(subject, user_name)
             messages.success(request, "DL registered successfully! Wait for Approval")
             return redirect('/')
         else:
@@ -206,6 +279,10 @@ def dl_registration(request):
         form = DLForm()
         
     return render(request, 'driver_registration.html', {'form': form})
+
+
+def become_host(request):
+    return render(request, 'become_host.html')
 
 
 
@@ -220,6 +297,8 @@ def cost_estimate(request):
     return render(request, 'cost_estimate.html')
 
 
+@login_required
+@check_verification_required
 def bookride(request):
     if 'term' in request.GET:
         qs = Location.objects.filter(location_name__istartswith=request.GET.get('term'))
@@ -247,6 +326,8 @@ def bookride(request):
     return render(request, 'book_ride.html', {'form': form})
 
 
+@login_required
+@check_verification_required
 def ridebracu(request):
     if 'term' in request.GET:
         qs = Location.objects.filter(location_name__istartswith=request.GET.get('term'))
@@ -274,7 +355,10 @@ def ridebracu(request):
     return render(request, 'from_bracu.html', {'form': form})
 
 
+@login_required
+@check_verification_required
 def tobracu(request):
+    
     if 'term' in request.GET:
         qs = Location.objects.filter(location_name__istartswith=request.GET.get('term'))
         lnames = list()
@@ -340,7 +424,10 @@ def ride_cost(start_loc, destination, r_type, r_capacity):
 def ride_created(request, ride_id):
     return redirect('ride_monitor', ride_id=ride_id)
 
-def ride_monitor(request, ride_id):
+
+@login_required
+@check_verification_required
+def ride_monitor(request, ride_id):    
     ride = get_object_or_404(Ride, pk=ride_id)
     form = BookRideForm(request.POST or None, user=request.user)
 
@@ -376,7 +463,9 @@ def send_mail_ride_booked(email, rider, rider_phone, ride_url):
     send_mail(subject, message, email_from, recipient_list)
 
 
-def requested_rides(request):
+@login_required
+@check_verification_required
+def requested_rides(request):    
     requested_rides = Ride.objects.filter(ride_status='requested').order_by('-created_at')
 
     ride_type = request.GET.get('ride_type')
@@ -390,11 +479,20 @@ def requested_rides(request):
     return render(request, 'requested_rides.html', {'requested_rides': requested_rides})
 
 
-
-def ride_details(request, ride_id):
+@login_required
+@check_verification_required
+def ride_details(request, ride_id):    
     ride = get_object_or_404(Ride, pk=ride_id)
     form = AcceptRideForm(request.POST or None, user=request.user)
+    current_user = request.user
     
+    if ride.ride_type == 'bike' and current_user.profile.is_bike_host == False:
+            messages.success(request, "You must apply and be approved for hosting Bike rides!")
+            return redirect('become_host')
+    elif ride.ride_type == 'car' and current_user.profile.is_car_host == False:
+            messages.success(request, "You must apply and be approved for hosting Car rides!")
+            return redirect('become_host')
+
     if (ride.ride_status == 'requested') and (request.method == 'POST' and form.is_valid()):
         ride.hosted_by = request.user
         ride.ride_status = 'accepted'
@@ -417,6 +515,7 @@ def ride_details(request, ride_id):
         return render(request, 'ride_details.html', {'ride': ride, 'form': form})
 
 
+@login_required
 def delete_ride(request, ride_id):
     ride = get_object_or_404(Ride, pk=ride_id)
     
@@ -457,7 +556,8 @@ def end_ride(request, ride_id):
 
 
 
-
+@login_required
+@check_verification_required
 def scheduleride(request):
     if 'term' in request.GET:
         qs = Location.objects.filter(location_name__istartswith=request.GET.get('term'))
@@ -471,6 +571,12 @@ def scheduleride(request):
         
         if form.is_valid():
             new_ride = form.save(commit=False)
+            if new_ride.ride_type == 'bike' and request.user.profile.is_bike_host == False:
+                messages.success(request, "You must apply and be approved for hosting Bike rides!")
+                return redirect('become_host')
+            elif new_ride.ride_type == 'car' and request.user.profile.is_car_host == False:
+                messages.success(request, "You must apply and be approved for hosting Car rides!")
+                return redirect('become_host')
             new_ride.hosted_by = request.user
             new_ride.ride_status = 'scheduled'
             new_ride.riderpays = ride_cost(new_ride.start_loc, new_ride.destination, new_ride.ride_type, new_ride.ride_capacity)
@@ -485,6 +591,8 @@ def scheduleride(request):
         
     return render(request, 'schedule_ride.html', {'form': form})
 
+@login_required
+@check_verification_required
 def schridebracu(request):
     if 'term' in request.GET:
         qs = Location.objects.filter(location_name__istartswith=request.GET.get('term'))
@@ -498,6 +606,12 @@ def schridebracu(request):
         
         if form.is_valid():
             new_ride = form.save(commit=False)
+            if new_ride.ride_type == 'bike' and request.user.profile.is_bike_host == False:
+                messages.success(request, "You must apply and be approved for hosting Bike rides!")
+                return redirect('become_host')
+            elif new_ride.ride_type == 'car' and request.user.profile.is_car_host == False:
+                messages.success(request, "You must apply and be approved for hosting Car rides!")
+                return redirect('become_host')
             new_ride.hosted_by = request.user
             new_ride.ride_status = 'scheduled'
             new_ride.riderpays = ride_cost(new_ride.start_loc, new_ride.destination, new_ride.ride_type, new_ride.ride_capacity)
@@ -512,37 +626,38 @@ def schridebracu(request):
         
     return render(request, 'schedule_from_bracu.html', {'form': form})
 
+@login_required
+@check_verification_required
 def schtobracu(request):
-    if 'term' in request.GET:
-        qs = Location.objects.filter(location_name__istartswith=request.GET.get('term'))
-        lnames = list()
-        for loca in qs:
-            lnames.append(loca.location_name)
-        return JsonResponse(lnames, safe=False)
-    
     if request.method == 'POST':
         form = RideForm(request.POST, request.FILES)
-        
         if form.is_valid():
             new_ride = form.save(commit=False)
+            if new_ride.ride_type == 'bike' and request.user.profile.is_bike_host == False:
+                messages.success(request, "You must apply and be approved for hosting Bike rides!")
+                return redirect('become_host')
+            elif new_ride.ride_type == 'car' and request.user.profile.is_car_host == False:
+                messages.success(request, "You must apply and be approved for hosting Car rides!")
+                return redirect('become_host')
             new_ride.hosted_by = request.user
             new_ride.ride_status = 'scheduled'
             new_ride.riderpays = ride_cost(new_ride.start_loc, new_ride.destination, new_ride.ride_type, new_ride.ride_capacity)
             new_ride.save()
-            
+
             return redirect('ride_details', ride_id=new_ride.pk)
         else:
             messages.error(request, "Form validation failed!")
-
     else:
         form = RideForm()
-        
+
     return render(request, 'schedule_to_bracu.html', {'form': form})
 
 
 
 
-def scheduled_rides(request):
+@login_required
+@check_verification_required
+def scheduled_rides(request):    
     scheduled_rides = Ride.objects.filter(ride_status='scheduled').order_by('start_time')
 
     ride_type = request.GET.get('ride_type')
@@ -557,8 +672,10 @@ def scheduled_rides(request):
 
 
 
-
+@login_required
+@check_verification_required
 def rides_taken(request):
+    
     current_user = request.user
     rides_taken = Ride.objects.filter(rider=current_user).order_by('-updated_at')
 
@@ -573,7 +690,10 @@ def rides_taken(request):
     return render(request, 'rides_taken.html', {'rides_taken': rides_taken})
 
 
+@login_required
+@check_verification_required
 def rides_hosted(request):
+    
     current_user = request.user
     rides_hosted = Ride.objects.filter(hosted_by=current_user).order_by('-updated_at')
 
@@ -588,7 +708,10 @@ def rides_hosted(request):
     return render(request, 'rides_hosted.html', {'rides_hosted': rides_hosted})
 
 
+@login_required
+@check_verification_required
 def rides_ongoing(request):
+    
     current_user = request.user
     rides_ongoing = Ride.objects.filter(rider=current_user) | Ride.objects.filter(hosted_by=current_user)
     rides_ongoing = Ride.objects.exclude(ride_status='ended').order_by('-updated_at')

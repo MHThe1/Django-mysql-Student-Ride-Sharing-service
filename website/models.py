@@ -14,7 +14,8 @@ class Profile(models.Model):
     address = models.CharField(null=True, blank=True, max_length=300)
     profile_pic = models.ImageField(null=True, blank=True, upload_to='profile_pics', default='default.png')
 
-    is_host = models.BooleanField(default=False)
+    is_bike_host = models.BooleanField(default=False)
+    is_car_host = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username
@@ -44,7 +45,7 @@ class Driver(models.Model):
     dl_approved = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.host.user.username
+        return self.host.username
 
 
 class Location(models.Model):

@@ -84,34 +84,24 @@
     .profile-info p:last-child {
         border-bottom: none;
     }
-
 </style>
 
 <div class="container mt-5">
     <div class="profile-header">
-        <img src="{{ user.profile.profile_pic.url }}" alt="DP" class="profile-picture">
-        <h3 class="profile-name">{{ user.profile.fullname}}</h3>
-        <p>@{{ user.username }}</p>
-        <p>{{ user.email }}</p>
-        <br>
-        <a href="{% url 'update_profile' %}" class="btn btn-secondary btn-custom">Edit Profile</a>
+        <img src="{{ person.profile.profile_pic.url }}" alt="DP" class="profile-picture">
+        <h3 class="profile-name">{{ person.profile.fullname}}</h3>
+        <p>@{{ person.username }}</p>
+        <p>{{ person.email }}</p>
     </div>
 
     <div class="profile-info">
-        <p><span class="title">Student ID:</span> {{ user.profile.student_id }}</p>
-        <p><span class="title">Contact Number:</span> {{ user.profile.phone_number }}</p>
-        <p><span class="title">Address:</span> {{ user.profile.address }}</p>
         <p><span class="title">Rider Rating:</span> {{ average_rider_rating }}</p>
         <p><span class="title">Rides Taken:</span> {{ num_rides_as_rider }}</p>
-        {% if user.profile.is_host == True %}
+        {% if person.profile.is_host == True %}
         <p><span class="title">Host Rating:</span> {{ average_host_rating }}</p>
         <p><span class="title">Rides Hosted:</span> {{ num_rides_as_host }}</p>
         {% endif %}
     </div>
-</div>
-<div class="text-center">
-    <a href="{% url 'rides_taken' %}" class="btn btn-primary btn-custom">Rides Taken</a>
-    <a href="{% url 'rides_ongoing' %}" class="btn btn-secondary btn-custom">Rides Ongoing</a>
 </div>
 </div>
 </div>
