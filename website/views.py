@@ -22,8 +22,15 @@ from decouple import config
 from django.contrib.auth.decorators import user_passes_test
 
 
-def home(request):    
-    return render(request, 'home.html', {})
+def home(request):
+    if request.user.is_authenticated:
+        user_profile = Profile.objects.get(user=request.user)
+        context = {
+            'user_profile': user_profile
+        }
+    else:
+        context = {}
+    return render(request, 'home.html', context)
 
 def login_user(request):
     if request.method == 'POST':
@@ -43,6 +50,18 @@ def login_user(request):
 
 def is_staff_or_superuser(user):
     return user.is_authenticated and (user.is_staff or user.is_superuser)
+
+
+def header(request):
+    ongoing_rides_count = 0
+    if request.user.is_authenticated and hasattr(request.user, 'profile') and request.user.profile.is_verified:
+        current_user = request.user
+        rides_ongoing = Ride.objects.filter(rider=current_user) | Ride.objects.filter(hosted_by=current_user)
+        ongoing_rides_count = rides_ongoing.exclude(ride_status='ended').count()
+    
+    return {
+        'ongoing_rides_count': ongoing_rides_count,
+    }
 
 
 @login_required
