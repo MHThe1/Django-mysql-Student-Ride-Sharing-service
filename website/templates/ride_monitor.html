@@ -67,7 +67,7 @@
     }
 </style>
 
-<div class="container" align="center">
+<div class="container text-center">
     <h1>Ride Monitor</h1>
     {% if ride.hosted_by %}
     <span class="location">Host: <strong> <a href="/profile/{{ ride.hosted_by.username }}">{{ ride.hosted_by.profile.fullname }}</a></strong></span>
@@ -82,6 +82,12 @@
     <span class="location">Capacity: <strong>{{ ride.ride_capacity }} person</strong></span>
     <span class="ride-capacity">{{ ride.ride_status }} {{ ride.time_since_creation }}</span>
     <br>
+    {% if ride.rider_note %}
+    <span class="location">Rider Note: {{ ride.rider_note}}</span>
+    {% endif %}
+    {% if ride.host_note %}
+    <span class="location">Host Note: {{ ride.host_note}}</span>
+    {% endif %}
     {% if ride.start_time %}
     <span class="ride-capacity">starts in {{ ride.time_till_start }}</span>
     <br>
@@ -118,13 +124,12 @@
         <button type="submit" class="btn btn-primary">Submit Review</button>
     </form>
     {% endif %}
+
+    <br>
+    <br>
+    <br>
+    <span class="ride-capacity">In any emergency please call our helpline: 01643909454</span>
 </div>
-
-
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
 
 {% else %}
 <div class="container">
@@ -133,5 +138,12 @@
 </h1>
 </div>
 {% endif %}
+
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 
 {% endblock %}

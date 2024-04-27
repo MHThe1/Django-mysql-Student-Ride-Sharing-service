@@ -23,6 +23,14 @@
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
 
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
 
 
     a {
@@ -58,6 +66,9 @@
         <option value="bike">Bike</option>
         <option value="car">Car</option>
     </select>
+    <br>
+    <label for="location-input">Search by Location:</label>
+    <input type="text" id="location-input" class="form-control" placeholder="Enter location">
     <ul id="ride-list">
         {% for ride in scheduled_rides %}
         <a href="{% url 'ride_monitor' ride.id %}">
@@ -77,22 +88,66 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const selectElement = document.getElementById('ride-type-select');
+        const locationInput = document.getElementById('location-input');
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const rideTypeParam = urlParams.get('ride_type');
+        const locationParam = urlParams.get('location');
+
+        if (rideTypeParam) {
+            selectElement.value = rideTypeParam;
+        }
+        if (locationParam) {
+            locationInput.value = locationParam;
+        }
+
         selectElement.addEventListener('change', function () {
+            filterRides();
+        });
+
+        locationInput.addEventListener('input', function () {
             filterRides();
         });
 
         function filterRides() {
             const selectedRideType = selectElement.value;
+            const searchLocation = locationInput.value.trim().toLowerCase();
             const rideItems = document.querySelectorAll('.ride-item');
             rideItems.forEach(function (ride) {
                 const rideType = ride.getAttribute('data-ride-type');
-                if (selectedRideType === 'all' || selectedRideType === rideType) {
+                const rideLocation = ride.querySelector('.location').textContent.trim().toLowerCase();
+                const rideMatchesType = selectedRideType === 'all' || selectedRideType === rideType;
+                const rideMatchesLocation = !searchLocation || rideLocation.includes(searchLocation);
+                if (rideMatchesType && rideMatchesLocation) {
                     ride.style.display = '';
                 } else {
                     ride.style.display = 'none';
                 }
             });
         }
+
+        function reloadPage() {
+            const rideTypeValue = selectElement.value;
+            const locationValue = locationInput.value;
+            const queryParams = new URLSearchParams();
+            if (rideTypeValue !== 'all') {
+                queryParams.set('ride_type', rideTypeValue);
+            }
+            if (locationValue.trim() !== '') {
+                queryParams.set('location', locationValue);
+            }
+            const queryString = queryParams.toString();
+            const url = window.location.pathname + (queryString ? '?' + queryString : '');
+            window.location.href = url;
+        }
+
+        function autoRefresh() {
+            setTimeout(function () {
+                reloadPage();
+            }, 600000);
+        }
+
+        autoRefresh();
     });
 </script>
 

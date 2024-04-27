@@ -82,6 +82,12 @@
     <span class="location">Capacity: <strong>{{ ride.ride_capacity }} person</strong></span>
     <span class="ride-capacity">{{ ride.ride_status }} {{ ride.time_since_creation }}</span>
     <br>
+    {% if ride.rider_note %}
+    <span class="location">Rider Note: {{ ride.rider_note}}</span>
+    {% endif %}
+    {% if ride.host_note %}
+    <span class="location">Host Note: {{ ride.host_note}}</span>
+    {% endif %}
 
     {% if not ride.hosted_by %}
     <form method="post">
@@ -125,6 +131,11 @@
     <p>Your Review: {{ ride.rider_review }}</p>
     {% endif %}
     {% endif %}
+
+    <br>
+    <br>
+    <br>
+    <span class="ride-capacity">In any emergency please call our helpline: 01643909454</span>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
