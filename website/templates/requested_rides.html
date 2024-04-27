@@ -50,6 +50,18 @@
     document.addEventListener('DOMContentLoaded', function () {
         const selectElement = document.getElementById('ride-type-select');
         const locationInput = document.getElementById('location-input');
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const rideTypeParam = urlParams.get('ride_type');
+        const locationParam = urlParams.get('location');
+
+        if (rideTypeParam) {
+            selectElement.value = rideTypeParam;
+        }
+        if (locationParam) {
+            locationInput.value = locationParam;
+        }
+
         selectElement.addEventListener('change', function () {
             filterRides();
         });
@@ -74,8 +86,33 @@
                 }
             });
         }
+
+        function reloadPage() {
+            const rideTypeValue = selectElement.value;
+            const locationValue = locationInput.value;
+            const queryParams = new URLSearchParams();
+            if (rideTypeValue !== 'all') {
+                queryParams.set('ride_type', rideTypeValue);
+            }
+            if (locationValue.trim() !== '') {
+                queryParams.set('location', locationValue);
+            }
+            const queryString = queryParams.toString();
+            const url = window.location.pathname + (queryString ? '?' + queryString : '');
+            window.location.href = url;
+        }
+
+        function autoRefresh() {
+            setTimeout(function () {
+                reloadPage();
+            }, 20000);
+        }
+
+        autoRefresh();
     });
 </script>
+
+
 
 
 {% endblock %}

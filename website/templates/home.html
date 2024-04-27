@@ -44,7 +44,11 @@
 </style>
 
 <div class="jumbotron text-center">
+  {% if not user.is_authenticated %}
   <h1>Welcome to stuber</h1>
+  {% else %}
+  <h1>Welcome {{user.profile.fullname}}</h1>
+  {%endif%}
   <div class="container-fluid">Connecting students and faculties with safe and reliable rides.</div>
 </div>
 <div class="container text-center">
