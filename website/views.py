@@ -323,9 +323,10 @@ def become_host(request):
     
     if show_apply_button:
         if request.method == 'POST':
-            user_name = request.user.profile.fullname
-            subject = f"{user_name} has requested to become host!"
-            send_mail_to_become_host(subject, user_name)
+            user_name = request.user.username
+            fullname = request.user.profile.fullname
+            subject = f"{fullname} has requested to become host!"
+            send_mail_to_become_host(subject, fullname, user_name)
             messages.success(request, "Request to become a Host sent! Wait for Approval")
             return redirect('/')
     else:
@@ -341,9 +342,9 @@ def become_host(request):
     return render(request, 'become_host.html', context)
 
 
-def send_mail_to_become_host(subject, name):
+def send_mail_to_become_host(subject, fullname, name):
     site_domain = config('SITE_DOMAIN')
-    message = f'{name} has requested to become a host, please take a look and verify from admin panel. Link to admin panel: {site_domain}/admin'
+    message = f'{fullname} has requested to become a host, please take a look and verify from admin panel. Link to admin panel: {site_domain}/inspect_host_status/{name}'
     email_from = settings.EMAIL_HOST_USER
     recipient_list = ['mehedihtanvir@gmail.com']
     send_mail(subject, message, email_from, recipient_list)
