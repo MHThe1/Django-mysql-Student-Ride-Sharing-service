@@ -564,12 +564,16 @@ def requested_rides(request):
     requested_rides = Ride.objects.filter(ride_status='requested').order_by('-created_at')
 
     ride_type = request.GET.get('ride_type')
+    location = request.GET.get('location')
 
     if ride_type:
         if ride_type == 'both':
             pass
         else:
             requested_rides = requested_rides.filter(ride_type=ride_type)
+    
+    if location:
+        requested_rides = requested_rides.filter(start_loc__icontains=location)
 
     return render(request, 'requested_rides.html', {'requested_rides': requested_rides})
 
@@ -772,7 +776,8 @@ def scheduled_rides(request):
 def rides_taken(request):
     
     current_user = request.user
-    rides_taken = Ride.objects.filter(rider=current_user).order_by('-updated_at')
+    rides = Ride.objects.filter(rider=current_user).order_by('-updated_at')
+    rides_taken = rides.filter(ride_status='ended')
 
     ride_type = request.GET.get('ride_type')
 

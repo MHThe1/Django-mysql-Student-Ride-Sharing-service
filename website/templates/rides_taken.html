@@ -69,7 +69,7 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 </style>
-<div class="container">
+<div class="container text-center">
     <h1>Ride History</h1>
     <label for="ride-type-select">Filter by Ride Type:</label>
     <select id="ride-type-select" class="btn btn-primary dropdown-toggle">
@@ -84,7 +84,7 @@
                 <span class="ride-capacity">Riders: <strong>{{ ride.ride_capacity }}</strong> || Ride Type: <strong>{{ ride.ride_type }}</strong></span>
                 <br>
                 <span class="ride-time-since">{{ ride.time_since_creation }}</span>
-                <br><div class="text-center">
+                <br>
                 <a class="btn btn-primary btn-custom" href="{% url 'ride_monitor' ride.id %}">See Details</a>
             </li>
         {% endfor %}

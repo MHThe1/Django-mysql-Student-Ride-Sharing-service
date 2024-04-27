@@ -2,54 +2,19 @@
 {% block title %} Requested Rides | {% endblock title %}
 {% block content %}
 
-{% if user.is_authenticated %}
 <style>
-    h1 {
-        color: #007bff;
-        font-size: 24px;
-        margin-bottom: 20px;
+        .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
 
-    ul {
-        list-style: none;
-        padding: 0;
-    }
-
-    .box {
-        background-color: #f8f9fa;
-        border-radius: 5px;
-        padding: 15px;
-        margin-bottom: 10px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-
-
-    a {
-        color: #007bff;
-        text-decoration: none;
-        display: block;
-    }
-
-    a:hover {
-        text-decoration: underline;
-    }
-
-    .ride-type {
-        font-weight: bold;
-        color: #28a745;
-    }
-
-    .ride-capacity {
-        font-weight: bold;
-        color: #d44333;
-    }
-
-    .location {
-        display: block;
-        margin-bottom: 5px;
-    }
 </style>
+
+{% if user.is_authenticated %}
 <div class="container text-center">
     <h1>Requested Rides</h1>
     <label for="ride-type-select">Filter by Ride Type:</label>
@@ -58,34 +23,51 @@
         <option value="bike">Bike</option>
         <option value="car">Car</option>
     </select>
+    <br>
+    <label for="location-input">Search by Location:</label>
+    <input type="text" id="location-input" class="form-control" placeholder="Enter location">
     <ul id="ride-list">
         {% for ride in requested_rides %}
-        <a href="{% url 'ride_details' ride.id %}">
             <li class="ride-item box" data-ride-type="{{ ride.ride_type }}">
+                <a href="{% url 'ride_details' ride.id %}">
                 <span class="location"><strong> {{ ride.start_loc }}</strong> to <strong>{{ ride.destination }}</strong></span>
                 <span class="ride-capacity">Riders: <strong>{{ ride.ride_capacity }}</strong> || Ride Type: <strong>{{ ride.ride_type }}</strong></span>
                 <br>
                 <span class="ride-time-since">{{ ride.time_since_creation }}</span>
                 <br>
+                </a>
             </li>
-        </a>
         {% endfor %}
     </ul>
 </div>
 
+{% else %}
+<h1>You must <a href="{% url 'home' %}"> Login </a> or <a href="{% url 'register' %}"> Register First </a></h1>
+{% endif %}
+
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const selectElement = document.getElementById('ride-type-select');
+        const locationInput = document.getElementById('location-input');
         selectElement.addEventListener('change', function () {
+            filterRides();
+        });
+
+        locationInput.addEventListener('input', function () {
             filterRides();
         });
 
         function filterRides() {
             const selectedRideType = selectElement.value;
+            const searchLocation = locationInput.value.trim().toLowerCase();
             const rideItems = document.querySelectorAll('.ride-item');
             rideItems.forEach(function (ride) {
                 const rideType = ride.getAttribute('data-ride-type');
-                if (selectedRideType === 'all' || selectedRideType === rideType) {
+                const rideLocation = ride.querySelector('.location').textContent.trim().toLowerCase();
+                const rideMatchesType = selectedRideType === 'all' || selectedRideType === rideType;
+                const rideMatchesLocation = !searchLocation || rideLocation.includes(searchLocation);
+                if (rideMatchesType && rideMatchesLocation) {
                     ride.style.display = '';
                 } else {
                     ride.style.display = 'none';
@@ -95,9 +77,5 @@
     });
 </script>
 
-
-{% else %}
-<h1>You must <a href="{% url 'home' %}"> Login </a> or <a href="{% url 'register' %}"> Register First </a></h1>
-{% endif %}
 
 {% endblock %}
