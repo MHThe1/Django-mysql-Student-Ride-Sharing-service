@@ -57,9 +57,10 @@ class Location(models.Model):
 
 class Ride(models.Model):
     rider = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE, related_name='rides_as_rider')
-    start_loc = models.CharField(max_length=40)
-    destination = models.CharField(max_length=40)
+    start_loc = models.CharField(max_length=500)
+    destination = models.CharField(max_length=500)
     riderpays = models.DecimalField(max_digits=10, decimal_places=2)
+    ride_distance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     hosted_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE, related_name='rides_as_host')
     payment_method = models.CharField(max_length=10)
     ride_status = models.CharField(default='requested', max_length=10)

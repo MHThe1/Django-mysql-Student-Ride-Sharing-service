@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.urls import reverse
+import requests
 from .models import *
 import uuid
 from django.conf import settings
@@ -409,7 +410,7 @@ def bookride(request):
         if form.is_valid():
             new_ride = form.save(commit=False)
             new_ride.rider = request.user
-            new_ride.riderpays = ride_cost(new_ride.start_loc, new_ride.destination, new_ride.ride_type, new_ride.ride_capacity)
+            new_ride.riderpays, new_ride.ride_distance = ride_cost(new_ride.start_loc, new_ride.destination, new_ride.ride_type, new_ride.ride_capacity)
             new_ride.save()
             
             return redirect('ride_monitor', ride_id=new_ride.pk)
@@ -438,7 +439,7 @@ def ridebracu(request):
         if form.is_valid():
             new_ride = form.save(commit=False)
             new_ride.rider = request.user
-            new_ride.riderpays = ride_cost(new_ride.start_loc, new_ride.destination, new_ride.ride_type, new_ride.ride_capacity)
+            new_ride.riderpays, new_ride.ride_distance = ride_cost(new_ride.start_loc, new_ride.destination, new_ride.ride_type, new_ride.ride_capacity)
             new_ride.save()
             
             return redirect('ride_monitor', ride_id=new_ride.pk)
@@ -469,7 +470,7 @@ def tobracu(request):
         if form.is_valid():
             new_ride = form.save(commit=False)
             new_ride.rider = current_user_profile
-            new_ride.riderpays = ride_cost(new_ride.start_loc, new_ride.destination, new_ride.ride_type, new_ride.ride_capacity)
+            new_ride.riderpays, new_ride.ride_distance = ride_cost(new_ride.start_loc, new_ride.destination, new_ride.ride_type, new_ride.ride_capacity)
             new_ride.save()
             
             return redirect('ride_monitor', ride_id=new_ride.pk)
@@ -482,11 +483,22 @@ def tobracu(request):
     return render(request, 'to_bracu.html', {'form': form})
 
 
+
+
 def get_coordinates(location_name):
-    geolocator = Nominatim(user_agent="distance_calculator")
-    location = geolocator.geocode(location_name)
-    if location:
-        return location.latitude, location.longitude
+    url = "https://us1.locationiq.com/v1/search.php"
+    params = {
+        "key": settings.LOCATIONIQ_API_KEY,
+        "q": location_name,
+        "format": "json"
+    }
+    response = requests.get(url, params=params)
+    data = response.json()
+    
+    if data:
+        latitude = float(data[0]['lat'])
+        longitude = float(data[0]['lon'])
+        return latitude, longitude
     else:
         return None
 
@@ -495,25 +507,50 @@ def calculate_distance(location1_name, location2_name):
     location2_coords = get_coordinates(location2_name)
 
     if location1_coords and location2_coords:
-        distance = geodesic(location1_coords, location2_coords).kilometers
-        return distance
+        url = "https://us1.locationiq.com/v1/directions/driving/{},{};{},{}".format(
+            location1_coords[1], location1_coords[0], location2_coords[1], location2_coords[0]
+        )
+        params = {
+            "key": settings.LOCATIONIQ_API_KEY,
+            "steps": "true",
+            "alternatives": "true",
+            "geometries": "polyline",
+            "overview": "full"
+        }
+        response = requests.get(url, params=params)
+
+        if response.status_code == 200:
+            data = response.json()
+            print("Response data:", data)
+
+            if data and 'routes' in data:
+                distance = data['routes'][0]['distance'] / 1000
+                return distance
+            else:
+                print("Error: 'routes' not found in data")
+        else:
+            print("Error: API request failed with status code", response.status_code)
     else:
-        return None
+        print("Error: Unable to get coordinates for one or both locations")
+    
+    return None
 
 
 def ride_cost(start_loc, destination, r_type, r_capacity):
-
     r_distance = calculate_distance(start_loc, destination)
-    if r_type == "bike":
-        r_cost = r_distance*30
-    else:
-        if r_capacity < 4:
-            r_cost = r_distance*80
+    
+    if r_distance is not None:
+        if r_type == "bike":
+            r_cost = r_distance * 30
         else:
-            r_cost = r_distance*r_capacity*30
+            if r_capacity < 4:
+                r_cost = r_distance * 80
+            else:
+                r_cost = r_distance * r_capacity * 30
 
-    return r_cost
-
+        return r_cost, r_distance
+    else:
+        return None
 
 
 
@@ -576,7 +613,12 @@ def requested_rides(request):
     if location:
         requested_rides = requested_rides.filter(start_loc__icontains=location)
 
+    for ride in requested_rides:
+        ride.start_loc = ride.start_loc.split(',')[0] if ',' in ride.start_loc else ride.start_loc
+        ride.destination = ride.destination.split(',')[0] if ',' in ride.destination else ride.destination
+
     return render(request, 'requested_rides.html', {'requested_rides': requested_rides})
+
 
 
 @login_required
@@ -679,7 +721,7 @@ def scheduleride(request):
                 return redirect('become_host')
             new_ride.hosted_by = request.user
             new_ride.ride_status = 'scheduled'
-            new_ride.riderpays = ride_cost(new_ride.start_loc, new_ride.destination, new_ride.ride_type, new_ride.ride_capacity)
+            new_ride.riderpays, new_ride.ride_distance = ride_cost(new_ride.start_loc, new_ride.destination, new_ride.ride_type, new_ride.ride_capacity)
             new_ride.save()
             
             return redirect('ride_details', ride_id=new_ride.pk)
@@ -714,7 +756,7 @@ def schridebracu(request):
                 return redirect('become_host')
             new_ride.hosted_by = request.user
             new_ride.ride_status = 'scheduled'
-            new_ride.riderpays = ride_cost(new_ride.start_loc, new_ride.destination, new_ride.ride_type, new_ride.ride_capacity)
+            new_ride.riderpays, new_ride.ride_distance = ride_cost(new_ride.start_loc, new_ride.destination, new_ride.ride_type, new_ride.ride_capacity)
             new_ride.save()
             
             return redirect('ride_details', ride_id=new_ride.pk)
@@ -741,7 +783,7 @@ def schtobracu(request):
                 return redirect('become_host')
             new_ride.hosted_by = request.user
             new_ride.ride_status = 'scheduled'
-            new_ride.riderpays = ride_cost(new_ride.start_loc, new_ride.destination, new_ride.ride_type, new_ride.ride_capacity)
+            new_ride.riderpays, new_ride.ride_distance = ride_cost(new_ride.start_loc, new_ride.destination, new_ride.ride_type, new_ride.ride_capacity)
             new_ride.save()
 
             return redirect('ride_details', ride_id=new_ride.pk)
@@ -767,6 +809,10 @@ def scheduled_rides(request):
             pass
         else:
             scheduled_rides = scheduled_rides.filter(ride_type=ride_type)
+
+    for ride in scheduled_rides:
+        ride.start_loc = ride.start_loc.split(',')[0] if ',' in ride.start_loc else ride.start_loc
+        ride.destination = ride.destination.split(',')[0] if ',' in ride.destination else ride.destination
 
     return render(request, 'scheduled_rides.html', {'scheduled_rides': scheduled_rides})
 

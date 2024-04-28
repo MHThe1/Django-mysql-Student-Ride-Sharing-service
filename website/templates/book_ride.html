@@ -117,10 +117,28 @@
 <script>
     $(function () {
         $("#start_locs, #destinations").autocomplete({
-            source: "{% url 'from_bracu' %}"
+            source: function (request, response) {
+                $.ajax({
+                    url: "https://api.locationiq.com/v1/autocomplete",
+                    dataType: "json",
+                    data: {
+                        key: "pk.88af78259583966e546afcc0d9e9c101",
+                        q: request.term,
+                        countrycodes: "BD",
+                        limit: 5,
+                        dedupe: 1
+                    },
+                    success: function (data) {
+                        response(data.map(function (item) {
+                            return item.display_name;
+                        }));
+                    }
+                });
+            }
         });
     });
 </script>
+
 
 {% else %}
 <h1>Please Register or Login First</h1>
