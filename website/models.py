@@ -47,12 +47,6 @@ class Driver(models.Model):
     def __str__(self):
         return self.host.username
 
-
-class Location(models.Model):
-    location_name = models.CharField(max_length=300)
-
-    def __str__(self):
-        return self.location_name
     
 
 class Ride(models.Model):

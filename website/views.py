@@ -239,7 +239,7 @@ def error_page(request):
 def send_mail_after_registration(email, token):
     subject = "Your account needs to be verified"
     site_domain = config('SITE_DOMAIN')
-    message = f'Hi, follow this link to verify your STuber account {site_domain}/{token}'
+    message = f'Hi, follow this link to verify your STuber account {site_domain}/verify/{token}'
     email_from = settings.EMAIL_HOST_USER
     recipient_list = [email]
     send_mail(subject, message, email_from, recipient_list)
@@ -383,26 +383,10 @@ def approve_car_host(request, username):
     return redirect('inspect_host_status', username=username)
 
 
-def cost_estimate(request):
-    if 'term' in request.GET:
-        qs = Location.objects.filter(location_name__istartswith=request.GET.get('term'))
-        lnames = list()
-        for loca in qs:
-            lnames.append(loca.location_name)
-        return JsonResponse(lnames, safe=False)
-
-    return render(request, 'cost_estimate.html')
-
 
 @login_required
 @check_verification_required
 def bookride(request):
-    if 'term' in request.GET:
-        qs = Location.objects.filter(location_name__istartswith=request.GET.get('term'))
-        lnames = list()
-        for loca in qs:
-            lnames.append(loca.location_name)
-        return JsonResponse(lnames, safe=False)
     
     if request.method == 'POST':
         form = RideForm(request.POST, request.FILES)
@@ -425,14 +409,7 @@ def bookride(request):
 
 @login_required
 @check_verification_required
-def ridebracu(request):
-    if 'term' in request.GET:
-        qs = Location.objects.filter(location_name__istartswith=request.GET.get('term'))
-        lnames = list()
-        for loca in qs:
-            lnames.append(loca.location_name)
-        return JsonResponse(lnames, safe=False)
-    
+def ridebracu(request):    
     if request.method == 'POST':
         form = RideForm(request.POST, request.FILES)
         
@@ -455,14 +432,6 @@ def ridebracu(request):
 @login_required
 @check_verification_required
 def tobracu(request):
-    
-    if 'term' in request.GET:
-        qs = Location.objects.filter(location_name__istartswith=request.GET.get('term'))
-        lnames = list()
-        for loca in qs:
-            lnames.append(loca.location_name)
-        return JsonResponse(lnames, safe=False)
-    
     if request.method == 'POST':
         current_user_profile = request.user.profile
         form = RideForm(request.POST, request.FILES)
@@ -701,13 +670,6 @@ def end_ride(request, ride_id):
 @login_required
 @check_verification_required
 def scheduleride(request):
-    if 'term' in request.GET:
-        qs = Location.objects.filter(location_name__istartswith=request.GET.get('term'))
-        lnames = list()
-        for loca in qs:
-            lnames.append(loca.location_name)
-        return JsonResponse(lnames, safe=False)
-    
     if request.method == 'POST':
         form = RideForm(request.POST, request.FILES)
         
@@ -736,13 +698,6 @@ def scheduleride(request):
 @login_required
 @check_verification_required
 def schridebracu(request):
-    if 'term' in request.GET:
-        qs = Location.objects.filter(location_name__istartswith=request.GET.get('term'))
-        lnames = list()
-        for loca in qs:
-            lnames.append(loca.location_name)
-        return JsonResponse(lnames, safe=False)
-    
     if request.method == 'POST':
         form = RideForm(request.POST, request.FILES)
         

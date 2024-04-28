@@ -22,7 +22,6 @@ urlpatterns = [
     path('inspect_host_status/<str:username>/', views.inspect_host_status, name='inspect_host_status'),
     path('approve_bike_host/<str:username>/', views.approve_bike_host, name='approve_bike_host'),
     path('approve_car_host/<str:username>/', views.approve_car_host, name='approve_car_host'),
-    path('cost_estimate/', views.cost_estimate, name='cost_estimate'),
     path('book_ride/', views.bookride, name='book_ride'),
     path('from_bracu/', views.ridebracu, name='from_bracu'),
     path('to_bracu/', views.tobracu, name='to_bracu'),

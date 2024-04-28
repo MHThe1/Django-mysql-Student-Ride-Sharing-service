@@ -4,5 +4,4 @@ from .models import *
 admin.site.register(Profile)
 admin.site.register(Vehicle)
 admin.site.register(Driver)
-admin.site.register(Location)
 admin.site.register(Ride)
