@@ -101,6 +101,13 @@ def dashboard(request):
 
     return render(request, 'dashboard.html', context)
 
+# SELECT COUNT() FROM website_ride WHERE rider_id = <current_user_id>;
+# SELECT AVG(rider_review) FROM website_ride WHERE rider_id = <current_user_id>;
+# SELECT COUNT() FROM website_ride WHERE hosted_by_id = <current_user_id>;
+
+
+
+
 @login_required
 def viewprofile(request, username):
     person = get_object_or_404(User, username=username)
@@ -134,6 +141,14 @@ def viewprofile(request, username):
     }    
 
     return render(request, 'view_profile.html', context)
+
+
+# SELECT COUNT() FROM website_ride WHERE rider_id = <person_id>;
+# SELECT AVG(rider_review) FROM website_ride WHERE rider_id = <person_id>;
+# SELECT COUNT() FROM website_ride WHERE hosted_by_id = <person_id>;
+# SELECT AVG(host_review) FROM website_ride WHERE hosted_by_id = <person_id>;
+
+
 
 
 
@@ -179,6 +194,12 @@ def register_user(request):
 
     return render(request, 'register.html')
 
+# SELECT email FROM website_profile WHERE (email LIKE '%@g.bracu.ac.bd' OR email LIKE '%@bracu.ac.bd' OR email LIKE '%@gmail.com');
+# SELECT username FROM auth_user WHERE username = '<username>';
+# SELECT email FROM auth_user WHERE email = '<email>';
+# INSERT INTO auth_user (username, email, password) VALUES ('<username>', '<email>', '<hashed_password>');
+# INSERT INTO website_profile (user_id, auth_token, fullname, student_id, phone_number) VALUES (<user_id>, '<auth_token>', '<fullname>', '<student_id>', '<phone_number>');
+
 
 @login_required
 def update_profile(request):
@@ -191,6 +212,16 @@ def update_profile(request):
     else:
         form = ProfileUpdateForm(instance=request.user.profile)
     return render(request, 'update_profile.html', {'form': form})
+
+
+# UPDATE yourapp_profile
+# SET fullname = '<new_fullname>',
+#     student_id = '<new_student_id>',
+#     phone_number = '<new_phone_number>'
+# WHERE user_id = <current_user_id>;
+# check_verification    SELECT is_verified FROM yourapp_profile WHERE user_id = <current_user_id>;
+
+
 
 
 def success(request):

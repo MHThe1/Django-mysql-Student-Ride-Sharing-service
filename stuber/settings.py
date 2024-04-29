@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'website',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
@@ -139,3 +140,9 @@ STATICFILES_DIRS = [
 MEDIA_ROOT = os.path.join(BASE_DIR, 'static/images')
 
 LOCATIONIQ_API_KEY = config('LOCATIONIQ_API_KEY')
+
+
+GRAPH_MODELS = {
+  'all_applications': True,
+  'group_models': True,
+}
