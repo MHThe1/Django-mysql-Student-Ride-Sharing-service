@@ -7,4 +7,4 @@ LocationIQ API is used to autocomplete and get distance data. (since I don't hav
 
 ## Screenshots
 
-<p> <img height="500px" src="/static/images/showImages/1.jpg"> &nbsp; <img height="500px" src="/static/images/showImages/2.jpg"> &nbsp; <img height="500px" src="//static/images/showImages/3.jpg"> &nbsp; <img height="500px" src="/static/images/showImages/4.jpg"> &nbsp; <img height="500px" src="/static/images/showImages/5.jpg"> &nbsp; <img height="500px" src="/static/images/showImages/6.jpg"> &nbsp; </p>
+<p> <img height="500px" src="/static/images/uipics/1.jpg"> &nbsp; <img height="500px" src="/static/images/uipics/2.jpg"> &nbsp; <img height="500px" src="//static/images/uipics/3.jpg"> &nbsp; <img height="500px" src="/static/images/uipics/4.jpg"> &nbsp; <img height="500px" src="/static/images/uipics/5.jpg"> &nbsp; <img height="500px" src="/static/images/uipics/6.jpg"> &nbsp; </p>
